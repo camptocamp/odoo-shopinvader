@@ -17,3 +17,7 @@
     "installable": True,
     "application": True,
 }
+
+
+# https://github.com/akretion/connector-search-engine/pull/37
+# https://github.com/OCA/search-engine/pull/27

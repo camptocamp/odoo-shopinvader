@@ -71,3 +71,8 @@ class PartnerServiceMixin(AbstractComponent):
 
     def _get_notification_type(self, partner, mode):
         raise NotImplementedError()
+
+    @property
+    def access_info(self):
+        with self.shopinvader_backend.work_on("res.partner") as work:
+            return work.component(usage="access.info")

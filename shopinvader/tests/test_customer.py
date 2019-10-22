@@ -106,3 +106,103 @@ class TestCustomer(CommonCase):
         self.service.work.partner = partner
         self.service.sign_in()
         self.assertFalse(SaleOrder.search(sale_domain))
+
+    def test_validation_handler(self):
+        # no validation required: always enabled
+        self.assertFalse(self.backend.validate_customers)
+        self.assertTrue(self.service._shopinvader_enabled({}))
+        # no validation required for all: disabled
+        self.backend.update(
+            dict(validate_customers=True, validate_customers_type="all")
+        )
+        self.assertFalse(self.service._shopinvader_enabled({}))
+
+        # validation required for companies
+        self.backend.validate_customers_type = "company"
+        # no company: enabled
+        self.assertTrue(self.service._shopinvader_enabled({}))
+        # yes company: disabled
+        self.assertFalse(
+            self.service._shopinvader_enabled({"is_company": True})
+        )
+
+        # validation required for companies and users
+        self.backend.validate_customers_type = "company_and_user"
+        # company or not: disabled
+        self.assertFalse(self.service._shopinvader_enabled({}))
+        self.assertFalse(
+            self.service._shopinvader_enabled({"is_company": True})
+        )
+
+        # validation required for users only
+        self.backend.validate_customers_type = "user"
+        # no company: disabled
+        self.assertFalse(self.service._shopinvader_enabled({}))
+        # yes company: enabled
+        self.assertTrue(
+            self.service._shopinvader_enabled({"is_company": True})
+        )
+
+    def test_create_customer_validation(self):
+        data = dict(self.data, external_id="12345678", email="acme@foo.com")
+        # validation is not active
+        self.assertFalse(self.backend.validate_customers)
+        res = self.service.dispatch("create", params=data)["data"]
+        partner = self.env["res.partner"].browse(res["id"])
+        # hence is enabled by default
+        self.assertTrue(partner.shopinvader_enabled)
+        # enable validation for all
+        self.backend.update(
+            dict(validate_customers=True, validate_customers_type="all")
+        )
+        data = dict(self.data, external_id="D5CdkqOEL", email="funny@foo.com")
+        res = self.service.dispatch("create", params=data)["data"]
+        partner = self.env["res.partner"].browse(res["id"])
+        # must not be validated
+        self.assertFalse(partner.shopinvader_enabled)
+
+    def test_create_customer_validation_company(self):
+        data = dict(
+            self.data,
+            external_id="12345678X",
+            is_company=True,
+            vat="BE0477472701",
+            email="acme@foo.com",
+        )
+        # validation is active but only for simple users
+        self.backend.update(
+            dict(validate_customers=True, validate_customers_type="user")
+        )
+        res = self.service.dispatch("create", params=data)["data"]
+        partner = self.env["res.partner"].browse(res["id"])
+        # hence the company is enabled
+        self.assertTrue(partner.shopinvader_enabled)
+        # now enable it for company only
+        self.backend.validate_customers_type = "company"
+        data = dict(
+            self.data,
+            external_id="12345678Y",
+            is_company=True,
+            vat="BE0477472701",
+            email="funny@foo.com",
+        )
+        res = self.service.dispatch("create", params=data)["data"]
+        partner = self.env["res.partner"].browse(res["id"])
+        self.assertFalse(partner.shopinvader_enabled)
+        # now let's enable it w/ specific action
+        partner.action_enable_for_shop()
+        self.assertTrue(partner.shopinvader_enabled)
+
+    # TODO: test salesman notifications
+
+    def _find_activity(self, record):
+        domain = [
+            ("res_model_id", "=", self.env.ref("base.model_res_partner").id),
+            ("res_id", "=", record.id),
+            (
+                "activity_type_id",
+                "=",
+                self.env.ref("shopinvader.mail_activity_validate_customer").id,
+            ),
+        ]
+        return self.env["mail.activity"].search_count(domain)

@@ -66,7 +66,7 @@
                                 <field name="sequence_id"/>
                                 <field name="account_analytic_id"/>
                             </group>
-                            <group name="customer" string="Customer configuration">
+                            <group name="sale_customer" string="Customer configuration">
                                 <field name="anonymous_partner_id"/>
                                 <group name="validate" string="Validation">
                                     <field name="validate_customers"/>

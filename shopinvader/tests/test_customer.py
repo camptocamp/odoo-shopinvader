@@ -107,42 +107,6 @@ class TestCustomer(CommonCase):
         self.service.sign_in()
         self.assertFalse(SaleOrder.search(sale_domain))
 
-    def test_validation_handler(self):
-        # no validation required: always enabled
-        self.assertFalse(self.backend.validate_customers)
-        self.assertTrue(self.service._shopinvader_enabled({}))
-        # no validation required for all: disabled
-        self.backend.update(
-            dict(validate_customers=True, validate_customers_type="all")
-        )
-        self.assertFalse(self.service._shopinvader_enabled({}))
-
-        # validation required for companies
-        self.backend.validate_customers_type = "company"
-        # no company: enabled
-        self.assertTrue(self.service._shopinvader_enabled({}))
-        # yes company: disabled
-        self.assertFalse(
-            self.service._shopinvader_enabled({"is_company": True})
-        )
-
-        # validation required for companies and users
-        self.backend.validate_customers_type = "company_and_user"
-        # company or not: disabled
-        self.assertFalse(self.service._shopinvader_enabled({}))
-        self.assertFalse(
-            self.service._shopinvader_enabled({"is_company": True})
-        )
-
-        # validation required for users only
-        self.backend.validate_customers_type = "user"
-        # no company: disabled
-        self.assertFalse(self.service._shopinvader_enabled({}))
-        # yes company: enabled
-        self.assertTrue(
-            self.service._shopinvader_enabled({"is_company": True})
-        )
-
     def test_create_customer_validation(self):
         data = dict(self.data, external_id="12345678", email="acme@foo.com")
         # validation is not active

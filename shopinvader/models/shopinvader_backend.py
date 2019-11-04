@@ -11,6 +11,7 @@ from odoo.http import request
 
 class ShopinvaderBackend(models.Model):
     _name = "shopinvader.backend"
+    _inherit = ["collection.base"]
     _description = "Shopinvader Backend"
 
     name = fields.Char(required=True)

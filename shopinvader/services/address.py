@@ -143,18 +143,15 @@ class AddressService(Component):
                 val = params.pop(key)
                 if val.get("id"):
                     params["%s_id" % key] = val["id"]
-        params["shopinvader_enabled"] = self._shopinvader_enabled(params)
+        params[
+            "shopinvader_enabled"
+        ] = self.partner_validator.enabled_by_params(params, "address")
         return params
-
-    def _get_shopinvader_enabled(self, backend_policy, params):
-        if backend_policy == "address":
-            return not params["is_company"] and params.get("parent_id")
-        return True
 
     def _get_notification_type(self, partner, mode):
         if mode == "create":
             notif = "address_created"
-            if not self._is_partner_validated(partner):
+            if not self.partner_validator.is_partner_validated(partner):
                 notif = "address_created_not_validated"
         elif mode == "update":
             notif = "address_updated"

@@ -70,7 +70,9 @@ class CustomerService(Component):
         # fmt: on
         if params.get("is_company"):
             params["is_company"] = True
-        params["shopinvader_enabled"] = self._shopinvader_enabled(params)
+        params[
+            "shopinvader_enabled"
+        ] = self.partner_validator.enabled_by_params(params, "profile")
         return params
 
     def _get_and_assign_cart(self):
@@ -110,7 +112,7 @@ class CustomerService(Component):
     def _get_notification_type(self, partner, mode):
         if mode == "create":
             notif = "new_customer_welcome"
-            if not self._is_partner_validated(partner):
+            if not self.partner_validator.is_partner_validated(partner):
                 notif = "new_customer_welcome_not_validated"
         return notif
 
@@ -122,17 +124,3 @@ class CustomerService(Component):
         elif backend_policy == "user" and not partner.is_company:
             return True
         return False
-
-    def _get_shopinvader_enabled(self, backend_policy, params):
-        is_company = "is_company" in params and params["is_company"]
-        if backend_policy == "company":
-            return not is_company
-        elif backend_policy == "user":
-            if "is_company" not in params:
-                # definetely not a company
-                return False
-            # rely on the flag: got a company -> enabled
-            return is_company
-        elif backend_policy == "company_and_user":
-            return False
-        return True

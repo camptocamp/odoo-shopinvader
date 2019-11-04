@@ -18,28 +18,14 @@ class PartnerServiceMixin(AbstractComponent):
         self._notify_partner(partner, "update")
         self._notify_salesman(partner, "update")
 
-    def _shopinvader_enabled(self, params):
-        if not self.shopinvader_backend.validate_customers:
-            return True
-        backend_policy = self.shopinvader_backend.validate_customers_type
-        if backend_policy == "all":
-            return False
-        return self._get_shopinvader_enabled(backend_policy, params)
-
-    def _get_shopinvader_enabled(self, backend_policy, params):
-        raise NotImplementedError()
-
-    def _is_partner_validated(self, partner):
-        if (
-            self.shopinvader_backend.validate_customers
-            and not partner.shopinvader_enabled
-        ):
-            return False
-        return True
+    @property
+    def partner_validator(self):
+        with self.shopinvader_backend.work_on("res.partner") as work:
+            return work.component(usage="partner.validator")
 
     def _notify_salesman(self, partner, mode):
         needed = False
-        if not self._is_partner_validated(partner):
+        if not self.partner_validator.is_partner_validated(partner):
             # always notify if validation needed
             needed = True
         backend_policy = self.shopinvader_backend["salesman_notify_" + mode]

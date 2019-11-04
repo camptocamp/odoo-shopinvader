@@ -10,8 +10,6 @@ from odoo.addons.base_rest.controllers import main
 from odoo.exceptions import MissingError
 from odoo.http import request, route
 
-from ..exceptions import PartnerNotValidatedError
-
 _logger = logging.getLogger(__name__)
 
 
@@ -64,35 +62,9 @@ class InvaderController(main.RestController):
 
     @classmethod
     def _validate_partner(cls, backend, partner):
-        if backend.validate_customers:
-            validator = getattr(
-                cls,
-                "_validate_partner_{}",
-                format(backend.validate_customers_type),
-                lambda backend, partner: True,
-            )
-            validator(backend, partner)
-
-    @classmethod
-    def _validate_partner_all(cls, backend, partner):
-        if not partner.shopinvader_enabled:
-            raise PartnerNotValidatedError(
-                "Customer found but not validated yet."
-            )
-
-    @classmethod
-    def _validate_partner_address(cls, backend, partner):
-        if not partner.shopinvader_enabled and not partner.is_company:
-            raise PartnerNotValidatedError(
-                "Address found but not validated yet."
-            )
-
-    @classmethod
-    def _validate_partner_company(cls, backend, partner):
-        if not partner.shopinvader_enabled and partner.is_company:
-            raise PartnerNotValidatedError(
-                "Company found but not validated yet."
-            )
+        with backend.work_on("res.partner") as work:
+            validator = work.component(usage="partner.validator")
+            validator.validate_partner(partner)
 
     @classmethod
     def _get_shopinvader_backend_from_request(cls):

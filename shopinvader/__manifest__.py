@@ -24,7 +24,7 @@
         "base_suspend_security",
         "base_url",
         "base_vat",
-        "connector",
+        "component",
         "component_event",
         "sale",
         "sale_discount_display_amount",

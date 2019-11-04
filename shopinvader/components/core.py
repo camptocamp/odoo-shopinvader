@@ -11,7 +11,6 @@ class BaseShopinvaderConnectorComponent(AbstractComponent):
     """
 
     _name = "base.shopinvader.connector"
-    _inherit = "base.connector"
     _collection = "shopinvader.backend"
 
     @property

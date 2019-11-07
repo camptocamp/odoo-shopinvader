@@ -110,6 +110,18 @@ class AddressService(Component):
                     }
                 },
             },
+            "industry_id": {
+                "required": False,
+                "type": "dict",
+                "schema": {
+                    "id": {
+                        "coerce": to_int,
+                        "required": False,
+                        "nullable": True,
+                        "type": "integer",
+                    }
+                },
+            },
             "is_company": {"coerce": to_bool, "type": "boolean"},
             "opt_in": {"coerce": to_bool, "type": "boolean"},
             "opt_out": {"coerce": to_bool, "type": "boolean"},
@@ -149,6 +161,7 @@ class AddressService(Component):
             "address_type",
             "is_company",
             ("title", ["id", "name"]),
+            ("industry_id", ["id", "name"]),
             "shopinvader_enabled:enabled",
         ]
         return res

@@ -12,13 +12,16 @@ class CustomerService(Component):
         schema = super()._validator_create()
         schema.update(
             {
+                # TODO: now all the fields are not required.
+                # Is it possible (desireadable?) to make name required
+                # if the others are not passed and viceversa.
                 "name": {
                     "type": "string",
                     "required": False,
                     "nullable": True,
                 },
-                "firstname": {"type": "string", "required": True},
-                "lastname": {"type": "string", "required": True},
+                "firstname": {"type": "string", "required": False},
+                "lastname": {"type": "string", "required": False},
             }
         )
         return schema
@@ -27,7 +30,8 @@ class CustomerService(Component):
         params = super()._prepare_params(params)
         # make sure name is not passed to create, even empty,
         # otherwise partner creation will be broken
-        params.pop("name", None)
+        if params.get("firstname") and params.get("lastname"):
+            params.pop("name", None)
         return params
 
 

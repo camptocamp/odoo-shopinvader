@@ -18,22 +18,7 @@ class PartnerAccess(Component):
         return self.work.service_work
 
     def profile(self, partner):
-        return {
-            "create": False,
-            "read": True,
-            "update": True,
-            "delete": False,
-            # easy check on client side for being able to edit
-            "readonly": False,
-        }
+        return {"read": True, "update": True, "delete": False}
 
     def address(self, address_id):
-        return {
-            # TODO: create should be a global params
-            "create": True,
-            "read": True,
-            "update": True,
-            "delete": True,
-            # easy check on client side for being able to edit
-            "readonly": False,
-        }
+        return {"read": True, "update": True, "delete": True}

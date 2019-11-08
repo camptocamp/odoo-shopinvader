@@ -37,6 +37,5 @@ class CustomerService(Component):
     def _to_customer_info(self, partner):
         info = super()._to_customer_info(partner)
         info["company_token"] = partner.invader_user_token
-        # TODO: move this to core module
-        info["is_company"] = partner.is_company
+        info["is_company"] = self.partner_user.is_company
         return info

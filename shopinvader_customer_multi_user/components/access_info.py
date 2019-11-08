@@ -8,10 +8,9 @@ from odoo.addons.component.core import Component
 class PartnerAccess(Component):
     _inherit = "shopinvader.partner.access"
 
-    def profile(self, partner=None):
-        info = super().profile(partner=partner)
-        partner = partner or self.partner
-        if partner != self.partner_user:
+    def profile(self, partner):
+        info = super().profile(partner)
+        if partner != self.service_work.partner_user:
             info.update({"update": False, "readonly": True})
         return info
 

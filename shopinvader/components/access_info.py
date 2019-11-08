@@ -13,7 +13,11 @@ class PartnerAccess(Component):
     _usage = "access.info"
     _apply_on = "res.partner"
 
-    def profile(self, partner=None):
+    @property
+    def service_work(self):
+        return self.work.service_work
+
+    def profile(self, partner):
         return {
             "create": False,
             "read": True,

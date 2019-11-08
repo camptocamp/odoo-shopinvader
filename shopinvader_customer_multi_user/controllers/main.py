@@ -10,7 +10,7 @@ class InvaderController(main.InvaderController):
         res = super(InvaderController, self)._get_component_context()
         # keep original partner into `partner_user`
         res["partner_user"] = res["partner"]
-        if res["partner"].is_invader_user():
+        if res["partner"] and res["partner"].is_invader_user():
             # just a user of the same main account:
             # override partner w/ its parent
             res["partner"] = res["partner"].get_parent_binding(

@@ -34,7 +34,9 @@ class CustomerService(Component):
         schema.update({"company_token": {"type": "string", "required": False}})
         return schema
 
-    def _get_customer_info(self):
-        info = super()._get_customer_info()
-        info["company_token"] = self.partner.company_token
+    def _to_customer_info(self, partner):
+        info = super()._to_customer_info(partner)
+        info["company_token"] = partner.invader_user_token
+        # TODO: move this to core module
+        info["is_company"] = partner.is_company
         return info

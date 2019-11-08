@@ -13,7 +13,5 @@ class InvaderController(main.InvaderController):
         if res["partner"] and res["partner"].is_invader_user():
             # just a user of the same main account:
             # override partner w/ its parent
-            res["partner"] = res["partner"].get_parent_binding(
-                res["shopinvader_backend"]
-            )
+            res["partner"] = res["partner"].parent_id
         return res

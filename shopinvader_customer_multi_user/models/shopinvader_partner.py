@@ -25,17 +25,3 @@ class ShopinvaderPartner(models.Model):
     def is_invader_user(self):
         self.ensure_one()
         return self.record_id.is_invader_user()
-
-    @api.multi
-    def get_parent_binding(self, backend):
-        self.ensure_one()
-        parent_partner = self.record_id.parent_id
-        if not parent_partner:
-            return self.browse()
-        return self.search(
-            [
-                ("record_id", "=", parent_partner.id),
-                ("backend_id", "=", backend.id),
-            ],
-            limit=1,
-        )

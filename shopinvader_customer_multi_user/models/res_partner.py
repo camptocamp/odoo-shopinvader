@@ -56,3 +56,17 @@ class ResPartner(models.Model):
     def is_invader_user(self):
         self.ensure_one()
         return self.type == self.invader_client_user_type()
+
+    # @api.multi
+    # def get_parent_binding(self, backend):
+    #     self.ensure_one()
+    #     parent_partner = self.parent_id
+    #     if not parent_partner:
+    #         return self.browse()
+    #     return self.env["shopinvader.partner"].search(
+    #         [
+    #             ("record_id", "=", parent_partner.id),
+    #             ("backend_id", "=", backend.id),
+    #         ],
+    #         limit=1,
+    #     )

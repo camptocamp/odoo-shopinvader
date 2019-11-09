@@ -17,8 +17,34 @@ class PartnerAccess(Component):
     def service_work(self):
         return self.work.service_work
 
+    @property
+    def partner(self):
+        return self.work.service_work.partner
+
+    @property
+    def partner_user(self):
+        return self.work.service_work.partner_user
+
+    def is_main_partner(self):
+        return self.partner == self.partner_user
+
     def profile(self, partner):
         return {"read": True, "update": True, "delete": False}
 
     def address(self, address_id):
         return {"read": True, "update": True, "delete": True}
+
+    def permission(self, partner):
+        return {
+            # scope: permissions
+            "address": {
+                # can create addresses only if profile partner is enabled
+                "create": self.partner.shopinvader_enabled
+            },
+            "purchase": {
+                # can hit the button to add to cart
+                "add_to_cart": self.partner.shopinvader_enabled,
+                # can go on w/ checkout steps
+                "checkout": self.partner.shopinvader_enabled,
+            },
+        }

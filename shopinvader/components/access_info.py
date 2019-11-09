@@ -19,11 +19,19 @@ class PartnerAccess(Component):
 
     @property
     def partner(self):
-        return self.work.service_work.partner
+        # this component might be called from a service component
+        # which has not being initialized in the scope of a complete REST API
+        # work context.
+        # Eg: called from a payment.transaction event handler.
+        return getattr(self.work.service_work, "partner", None)
 
     @property
     def partner_user(self):
-        return self.work.service_work.partner_user
+        # this component might be called from a service component
+        # which has not being initialized in the scope of a complete REST API
+        # work context.
+        # Eg: called from a payment.transaction event handler.
+        return getattr(self.work.service_work, "partner_user", None)
 
     def is_main_partner(self):
         return self.partner == self.partner_user
@@ -35,6 +43,8 @@ class PartnerAccess(Component):
         return {"read": True, "update": True, "delete": True}
 
     def permission(self, partner):
+        if self.partner is None:
+            return {"address": {}, "purchase": {}}
         return {
             # scope: permissions
             "address": {

@@ -16,9 +16,10 @@ class PartnerAccess(Component):
 
     def address(self, address_id):
         info = super().address(address_id)
-        address_owner = address_id == self.partner_user.id
-        if not self.is_main_partner() and not address_owner:
-            info.update({"read": True, "update": False, "delete": False})
+        if self.partner_user is not None:
+            address_owner = address_id == self.partner_user.id
+            if not self.is_main_partner() and not address_owner:
+                info.update({"read": True, "update": False, "delete": False})
         return info
 
     def permission(self, partner):

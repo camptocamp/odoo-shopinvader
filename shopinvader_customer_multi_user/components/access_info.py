@@ -8,13 +8,10 @@ from odoo.addons.component.core import Component
 class PartnerAccess(Component):
     _inherit = "shopinvader.partner.access"
 
-    def is_main_partner(self):
-        return self.partner == self.partner_user
-
     def profile(self, partner):
         info = super().profile(partner)
-        if partner != self.service_work.partner_user:
-            info.update({"update": False, "readonly": True})
+        if not self.is_main_partner() and partner != self.partner_user:
+            info.update({"update": False})
         return info
 
     def address(self, address_id):
@@ -24,8 +21,8 @@ class PartnerAccess(Component):
             info.update({"read": True, "update": False, "delete": False})
         return info
 
-    def permissions(self, partner):
-        perm = super().permissions(partner)
+    def permission(self, partner):
+        perm = super().permission(partner)
         if not self.is_main_partner():
             # simple company users cannot add new addresses
             perm["address"]["create"] = False

@@ -131,9 +131,9 @@ class ResPartner(models.Model):
                 )
                 recipient = partner.parent_id
             recipient._shopinvader_notify(backends, notif_type)
+            name = partner.name or partner.contact_address.replace("\n", " | ")
             msg_body = _("Shop {addr_type} '{name}' validated").format(
-                addr_type=partner.addr_type_display().lower(),
-                name=partner.name,
+                addr_type=partner.addr_type_display().lower(), name=name
             )
             recipient.message_post(body=msg_body)
 

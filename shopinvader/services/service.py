@@ -22,7 +22,15 @@ class BaseShopinvaderService(AbstractComponent):
     _expose_model = None
 
     @property
+    def partner_user(self):
+        # partner that matches the real user on client side
+        return self.work.partner_user
+
+    @property
     def partner(self):
+        # partner that matches the real user on client side
+        # or its main contact which in any case is used for all
+        # account information.
         return self.work.partner
 
     @property

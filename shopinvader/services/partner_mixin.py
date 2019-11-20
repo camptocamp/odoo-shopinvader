@@ -22,7 +22,9 @@ class PartnerServiceMixin(AbstractComponent):
 
     @property
     def partner_validator(self):
-        with self.shopinvader_backend.work_on("res.partner") as work:
+        with self.shopinvader_backend.work_on(
+            "res.partner", service_work=self.work
+        ) as work:
             return work.component(usage="partner.validator")
 
     def _notify_salesman(self, partner, mode):
@@ -41,6 +43,10 @@ class PartnerServiceMixin(AbstractComponent):
         raise NotImplementedError()
 
     def _notify_salesman_values(self, partner, mode):
+        # TODO: mode is not translated
+        msg = _("{addr_type} {mode} '{name}' needs review").format(
+            addr_type=partner.addr_type_display(), name=partner.name, mode=mode
+        )
         return {
             "res_model_id": self.env.ref("base.model_res_partner").id,
             "res_id": partner.id,
@@ -48,7 +54,7 @@ class PartnerServiceMixin(AbstractComponent):
             "activity_type_id": self.env.ref(
                 "shopinvader.mail_activity_validate_customer"
             ).id,
-            "summary": _("Partner needs review"),
+            "summary": msg,
         }
 
     def _get_salesman(self, partner):
@@ -71,3 +77,10 @@ class PartnerServiceMixin(AbstractComponent):
 
     def _get_notification_type(self, partner, mode):
         raise NotImplementedError()
+
+    @property
+    def access_info(self):
+        with self.shopinvader_backend.work_on(
+            "res.partner", service_work=self.work
+        ) as work:
+            return work.component(usage="access.info")

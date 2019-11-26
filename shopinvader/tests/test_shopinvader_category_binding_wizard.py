@@ -2,8 +2,12 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from odoo.addons.component.tests.common import SavepointComponentCase
 
+from .common import CommonMixin
 
-class TestShopinvaderCategoryBindingWizard(SavepointComponentCase):
+
+class TestShopinvaderCategoryBindingWizard(
+    SavepointComponentCase, CommonMixin
+):
     @classmethod
     def setUpClass(cls):
         super(TestShopinvaderCategoryBindingWizard, cls).setUpClass()
@@ -116,12 +120,6 @@ class TestShopinvaderCategoryBindingWizard(SavepointComponentCase):
         # The binding record should be re-activated
         bind_record = self.category_bind_model.search(domain)
         self.assertEqual(len(bind_record), 1)
-
-    def install_lang(self, lang_xml_id):
-        lang = self.env.ref(lang_xml_id)
-        wizard = self.env["base.language.install"].create({"lang": lang.code})
-        wizard.lang_install()
-        return lang
 
     def test_category_binding_multi_lang(self):
         """

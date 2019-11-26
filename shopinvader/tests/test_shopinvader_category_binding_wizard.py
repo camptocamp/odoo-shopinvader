@@ -130,7 +130,7 @@ class TestShopinvaderCategoryBindingWizard(SavepointComponentCase):
         - unbind it
         - bind it again
         """
-        lang = self.install_lang("base.lang_fr")
+        lang = self._install_lang("base.lang_fr")
         self.backend.lang_ids |= lang
         self.backend2.lang_ids |= lang
         category_bind_model = self.category_bind_model

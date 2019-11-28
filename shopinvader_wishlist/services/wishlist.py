@@ -59,7 +59,10 @@ class WishlistService(Component):
             }
         )
         wizard.add_set()
-        return self.search()
+        res = self.search()
+        # invalidate cart cache
+        res["store_cache"] = {"cart": {}}
+        return res
 
     def add_item(self, _id, **params):
         record = self._get(_id)

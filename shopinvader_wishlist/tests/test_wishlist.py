@@ -75,6 +75,22 @@ class WishlistCase(CommonWishlistCase):
         )
         self.assertEqual(self.prod_set.name, "Baz")
 
+    def test_move_item(self):
+        prod = self.prod_set.set_line_ids[0].product_id
+        move_to_set = self.prod_set.copy(default={"set_line_ids": False})
+        self.assertFalse(move_to_set.set_line_ids)
+        self.wishlist_service.dispatch(
+            "move_item",
+            self.prod_set.id,
+            params={
+                "move_to_wishlist_id": move_to_set.id,
+                "product_id": prod.id,
+            },
+        )
+        self.assertFalse(self.prod_set.set_line_ids)
+        self.assertEqual(len(move_to_set.set_line_ids), 1)
+        self.assertIn(prod, move_to_set.mapped("set_line_ids.product_id"))
+
     def test_search(self):
         res = self.wishlist_service.dispatch(
             "search", params={"scope": {"typology": "foo"}}

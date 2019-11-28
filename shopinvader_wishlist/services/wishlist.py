@@ -39,7 +39,7 @@ class WishlistService(Component):
 
     def update(self, _id, **params):
         record = self._get(_id)
-        record.write(self._prepare_params(params))
+        record.write(self._prepare_params(params.copy(), mode="update"))
         self._post_update(record)
         return self.search()
 
@@ -77,6 +77,11 @@ class WishlistService(Component):
     def delete_item(self, _id, **params):
         record = self._get(_id)
         self._delete_item(record, params)
+        return self._to_json_one(record)
+
+    def move_item(self, _id, **params):
+        record = self._get(_id)
+        self._move_item(record, params)
         return self._to_json_one(record)
 
     def _post_create(self, record):
@@ -146,6 +151,20 @@ class WishlistService(Component):
     def _validator_update_item(self):
         return self._validator_add_item()
 
+    def _validator_move_item(self):
+        return {
+            "product_id": {
+                "coerce": to_int,
+                "required": True,
+                "type": "integer",
+            },
+            "move_to_wishlist_id": {
+                "coerce": to_int,
+                "required": True,
+                "type": "integer",
+            },
+        }
+
     def _validator_delete_item(self):
         return {
             "product_id": {
@@ -163,10 +182,11 @@ class WishlistService(Component):
             ("partner_id", "=", self.partner_user.id),
         ]
 
-    def _prepare_params(self, params):
-        params["shopinvader_backend_id"] = self.shopinvader_backend.id
-        if not params.get("partner_id"):
-            params["partner_id"] = self.partner_user.id
+    def _prepare_params(self, params, mode="create"):
+        if mode == "create":
+            params["shopinvader_backend_id"] = self.shopinvader_backend.id
+            if not params.get("partner_id"):
+                params["partner_id"] = self.partner_user.id
         if not params.get("typology"):
             params["typology"] = "wishlist"
         params["set_line_ids"] = [
@@ -246,11 +266,21 @@ class WishlistService(Component):
                 self._prepare_item(params, record)
             )
 
+    def _move_item(self, record, params):
+        existing = self._get_existing_line(
+            record, params, raise_if_not_found=True
+        )
+        record2 = self._get(params["move_to_wishlist_id"])
+        self.env["product.set.line"].create(
+            self._prepare_item(params, record2)
+        )
+        existing.unlink()
+
     def _prepare_item(self, params, record):
         return {
             "product_set_id": record.id,
             "product_id": params["product_id"],
-            "quantity": params["quantity"],
+            "quantity": params.get("quantity") or 1,
         }
 
     def _delete_item(self, record, params):

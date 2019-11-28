@@ -202,11 +202,19 @@ class WishlistService(Component):
         # TODO: might be better to use product's index data
         # to avoid further computation, conversion
         # and mismatch between indexed data and current data.
-        return ["id", "name", "default_code:sku", "image", "url_key", "price"]
+        return [
+            "id",
+            "name",
+            "default_code:sku",
+            "image",
+            "url_key",
+            "price",
+            "object_id:objectID",
+        ]
 
     def _get_existing_line(self, record, params, raise_if_not_found=False):
         product_id = params["product_id"]
-        line = record.get_line_by_product(invader_variant_id=product_id)
+        line = record.get_line_by_product(product_id=product_id)
         if not line and raise_if_not_found:
             raise NotFound(
                 "No product found with id %s" % params["product_id"]
@@ -238,7 +246,7 @@ class WishlistService(Component):
     def _prepare_item(self, params, record):
         return {
             "product_set_id": record.id,
-            "shopinvader_variant_id": params["product_id"],
+            "product_id": params["product_id"],
             "quantity": params["quantity"],
         }
 

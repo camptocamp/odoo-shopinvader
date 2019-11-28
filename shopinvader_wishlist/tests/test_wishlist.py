@@ -120,8 +120,7 @@ class WishlistCase(CommonWishlistCase):
         prod = self.env.ref("product.product_product_4d")
         self.assertNotIn(prod, self.prod_set.mapped("set_line_ids.product_id"))
         self._bind_products(prod)
-        variant = prod._get_invader_variant(self.backend, "en_US")
-        params = {"product_id": variant.id}
+        params = {"product_id": prod.id}
         self.wishlist_service.dispatch(
             "add_item", self.prod_set.id, params=params
         )
@@ -131,14 +130,13 @@ class WishlistCase(CommonWishlistCase):
         prod = self.env.ref("product.product_product_4b")
         self.assertIn(prod, self.prod_set.mapped("set_line_ids.product_id"))
         self._bind_products(prod)
-        variant = prod._get_invader_variant(self.backend, "en_US")
-        line = self.prod_set.get_line_by_product(invader_variant_id=variant.id)
+        line = self.prod_set.get_line_by_product(product_id=prod.id)
         self.assertEqual(line.quantity, 1)
         with self.assertRaises(NotFound):
             self.wishlist_service.dispatch(
                 "update_item", self.prod_set.id, params={"product_id": 9999}
             )
-        params = {"product_id": variant.id}
+        params = {"product_id": prod.id}
         self.wishlist_service.dispatch(
             "update_item", self.prod_set.id, params=params
         )
@@ -150,7 +148,7 @@ class WishlistCase(CommonWishlistCase):
         self.assertIn(prod, self.prod_set.mapped("set_line_ids.product_id"))
         line = self.prod_set.get_line_by_product(product_id=prod.id)
         self.assertEqual(line.quantity, 1)
-        params = {"product_id": prod.shopinvader_bind_ids[0].id}
+        params = {"product_id": prod.id}
         self.wishlist_service.dispatch(
             "delete_item", self.prod_set.id, params=params
         )
@@ -164,9 +162,8 @@ class WishlistCase(CommonWishlistCase):
         self.assertEqual(
             res["partner"], {"id": self.partner.id, "name": self.partner.name}
         )
-        variant = self.env.ref(
-            "product.product_product_4b"
-        ).shopinvader_bind_ids[0]
+        prod = self.env.ref("product.product_product_4b")
+        variant = prod.shopinvader_bind_ids[0]
         res_line = res["lines"][0]
         self.assertEqual(res_line["id"], self.prod_set.set_line_ids[0].id)
         self.assertEqual(res_line["quantity"], 1)
@@ -175,5 +172,6 @@ class WishlistCase(CommonWishlistCase):
         self.assertEqual(res_line["product"]["name"], variant.name)
         self.assertEqual(res_line["product"]["sku"], variant.default_code)
         self.assertEqual(res_line["product"]["url_key"], variant.url_key)
+        self.assertEqual(res_line["product"]["objectID"], prod.id)
         self.assertIn("price", res_line["product"])
         self.assertIn("image", res_line["product"])

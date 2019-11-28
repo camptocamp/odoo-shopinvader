@@ -26,33 +26,35 @@ class ProductSet(CommonCase):
         self.assertEqual(line.shopinvader_variant_id, variant)
         self.assertEqual(variant.lang_id.code, "en_US")
 
-    def test_create_no_variant_switch_lang(self):
-        lang_fr = self._install_lang("base.lang_fr")
-        self.backend.lang_ids |= lang_fr
-        self.prod_set.lang_id = lang_fr
-        # ensure we can create a line from the product and we get the variant
-        prod = self.env.ref("product.product_product_4b")
-        self._bind_products(prod)
-        line = self.prod_set.set_line_ids.create(
-            {
-                "product_set_id": self.prod_set.id,
-                "product_id": prod.id,
-                "quantity": 1,
-            }
-        )
-        # test it w/ multi lang
-        variant_en = prod._get_invader_variant(self.backend, "en_US")
-        variant_fr = prod._get_invader_variant(self.backend, "fr_FR")
-        self.assertEqual(line.shopinvader_variant_id, variant_fr)
-        self.prod_set.lang_id = False
-        line = self.prod_set.set_line_ids.create(
-            {
-                "product_set_id": self.prod_set.id,
-                "product_id": prod.id,
-                "quantity": 1,
-            }
-        )
-        self.assertEqual(line.shopinvader_variant_id, variant_en)
+    # TODO: disabled for temporary fix to rely only on partner lang.
+    # See ../models/product_set.py
+    # def test_create_no_variant_switch_lang(self):
+    #     lang_fr = self._install_lang("base.lang_fr")
+    #     self.backend.lang_ids |= lang_fr
+    #     self.prod_set.lang_id = lang_fr
+    #     # ensure we can create a line from the product and we get the variant
+    #     prod = self.env.ref("product.product_product_4b")
+    #     self._bind_products(prod)
+    #     line = self.prod_set.set_line_ids.create(
+    #         {
+    #             "product_set_id": self.prod_set.id,
+    #             "product_id": prod.id,
+    #             "quantity": 1,
+    #         }
+    #     )
+    #     # test it w/ multi lang
+    #     variant_en = prod._get_invader_variant(self.backend, "en_US")
+    #     variant_fr = prod._get_invader_variant(self.backend, "fr_FR")
+    #     self.assertEqual(line.shopinvader_variant_id, variant_fr)
+    #     self.prod_set.lang_id = False
+    #     line = self.prod_set.set_line_ids.create(
+    #         {
+    #             "product_set_id": self.prod_set.id,
+    #             "product_id": prod.id,
+    #             "quantity": 1,
+    #         }
+    #     )
+    #     self.assertEqual(line.shopinvader_variant_id, variant_en)
 
     def test_create_no_product(self):
         # ensure we can create a line from the variant and we get the product

@@ -58,12 +58,19 @@ class ProductSetLine(models.Model):
         for record in self:
             if record.product_id and not record.shopinvader_variant_id:
                 backend = record.product_set_id.shopinvader_backend_id
-                lang = record.product_set_id.lang_id.code
+                # lang = record.product_set_id.lang_id.code
+                # TMP FIX: apparently the lang is not propagate to the context
+                # from the locomotive request
+                # and we cannot make sure which lang
+                # is going to be used.
+                # Let's rely only on the partner until we solve it.
+                lang = record.product_set_id.partner_id.lang
+                # / FIX
                 variant = record.product_id._get_invader_variant(backend, lang)
-                if not variant:
-                    lang = record.product_set_id.partner_id.lang
-                    # try w/ partner lang
-                    variant = record.product_id._get_invader_variant(
-                        backend, lang
-                    )
+                # if not variant:
+                #     lang = record.product_set_id.partner_id.lang
+                #     # try w/ partner lang
+                #     variant = record.product_id._get_invader_variant(
+                #         backend, lang
+                #     )
                 record.shopinvader_variant_id = variant

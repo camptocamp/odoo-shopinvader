@@ -49,7 +49,8 @@ class WishlistService(Component):
 
     def add_to_cart(self, _id):
         record = self._get(_id)
-        cart = self.component(usage="cart")._get()
+        cart_service = self.component(usage="cart")
+        cart = cart_service._get()
         wizard = self.env["product.set.add"].create(
             {
                 "order_id": cart.id,
@@ -59,10 +60,8 @@ class WishlistService(Component):
             }
         )
         wizard.add_set()
-        res = self.search()
-        # invalidate cart cache
-        res["store_cache"] = {"cart": {}}
-        return res
+        # return new cart
+        return cart_service._to_json(cart)
 
     def add_item(self, _id, **params):
         record = self._get(_id)

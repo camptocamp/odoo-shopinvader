@@ -11,6 +11,7 @@ product-variant
 sale-workflow
 #social
 social https://github.com/camptocamp/social 12-mail_inline_css
+#sale-workflow
 storage
 rest-framework
 odoo-misc https://github.com/shopinvader/odoo-misc 12.0
@@ -20,3 +21,6 @@ shopinvader-payment https://github.com/shopinvader/odoo-shopinvader-payment 12.0
 
 # https://github.com/OCA/queue/pull/150
 queue https://github.com/acsone/queue 12.0-imp-queue_job_test_mixin-dro
+
+# [12.0] Add sale_wishlist - https://github.com/OCA/sale-workflow/pull/994
+sale-workflow https://github.com/camptocamp/sale-workflow 12-add-sale_wishlist

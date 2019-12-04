@@ -66,3 +66,17 @@ class ShopinvaderBackend(models.Model):
     @api.multi
     def force_resynchronize_index(self):
         self.mapped("se_backend_id.index_ids").resynchronize_all_bindings()
+
+    @api.multi
+    def export_index_settings(self):
+        self.mapped("se_backend_id.index_ids").export_settings()
+
+    @api.model
+    def export_all_settings(self):
+        for index in self.search([]):
+            se_specific_backend = index.backend_id.specific_backend
+            with se_specific_backend.work_on(
+                index.model_id.model, index=index
+            ) as work:
+                exporter = work.component(usage="se.record.exporter")
+                exporter.export_settings()

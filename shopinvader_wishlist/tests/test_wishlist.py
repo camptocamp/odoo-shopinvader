@@ -190,4 +190,4 @@ class WishlistCase(CommonWishlistCase):
         self.assertEqual(res_line["product"]["url_key"], variant.url_key)
         self.assertEqual(res_line["product"]["objectID"], prod.id)
         self.assertIn("price", res_line["product"])
-        self.assertIn("image", res_line["product"])
+        self.assertIn("images", res_line["product"])

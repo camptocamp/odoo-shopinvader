@@ -8,7 +8,7 @@ import string
 from odoo import api, fields, models
 
 
-def _generate_token(length=8):
+def _generate_token(length=10):
     return "".join(
         random.choice(string.ascii_letters + string.digits)
         for __ in range(length)
@@ -20,6 +20,7 @@ class ResPartner(models.Model):
     _inherit = "res.partner"
 
     invader_user_token = fields.Char(readonly=True, index=True)
+    # `type` is the base field from odoo core :/
     type = fields.Selection(
         selection_add=[("invader_client_user", "Invader client user")]
     )
@@ -33,7 +34,7 @@ class ResPartner(models.Model):
     ]
 
     @api.model
-    def _generate_invader_user_token(self, length=8):
+    def _generate_invader_user_token(self, length=10):
         """Generate a random token."""
         _token = _generate_token(length=length)
         while self.find_by_invader_user_token(_token):
@@ -48,6 +49,13 @@ class ResPartner(models.Model):
     def assign_invader_user_token(self, token=None):
         token = token or self._generate_invader_user_token()
         self.write({"invader_user_token": token})
+
+    @api.multi
+    def action_regenerate_invader_user_token(self):
+        # NOTE: for buttons we cannot use `_generate_invader_user_token`
+        # directly because the client passes the context as 1st argument
+        # hence the token turns to be the ctx dict as a string :/
+        self.assign_invader_user_token()
 
     def invader_client_user_type(self):
         return "invader_client_user"

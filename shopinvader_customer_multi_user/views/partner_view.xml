@@ -7,6 +7,8 @@
     <field name="arch" type="xml">
       <group name="extras" position="inside">
         <field name="invader_user_token"/>
+        <button name="action_regenerate_invader_user_token" type="object"
+                string="Re-generate token" attrs="{'invisible': [('invader_user_token','=',False)]}"/>
       </group>
     </field>
   </record>

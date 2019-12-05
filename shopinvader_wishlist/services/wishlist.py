@@ -228,7 +228,7 @@ class WishlistService(Component):
             "id",
             "name",
             "default_code:sku",
-            "image",
+            "images",
             "url_key",
             "price",
             "object_id:objectID",

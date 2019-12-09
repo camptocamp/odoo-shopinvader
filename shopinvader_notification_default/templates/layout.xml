@@ -83,8 +83,8 @@
                 <table id="main_header">
                   <tbody>
                     <tr>
-                      <td class="logo">
-                        <img id="main_logo" t-ignore="true" t-attf-src="data:image/png;base64,#{main_logo}" />
+                      <td class="logo" t-if="main_logo">
+                        <img id="main_logo" t-ignore="true" t-att-src="image_data_uri(main_logo)" />
                       </td>
                     </tr>
                   </tbody>

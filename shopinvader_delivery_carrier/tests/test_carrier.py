@@ -194,9 +194,13 @@ class CarrierCase(CommonCarrierCase):
         belgium = self.env.ref("base.be")
         partner = self.cart.partner_id
         partner.write({"country_id": french_country.id})
-        self.cart.write({"carrier_id": self.poste_carrier.id})
-        self.cart.get_delivery_price()
-        self.cart.set_delivery_line()
+        # set carrier
+        self.env["choose.delivery.carrier"].with_context(
+            {
+                "default_order_id": self.cart.id,
+                "default_carrier_id": self.poste_carrier.id,
+            }
+        ).create({}).button_confirm()
         # Force load every fields
         self.cart.read()
         cart_values_before = self.cart._convert_to_write(self.cart._cache)

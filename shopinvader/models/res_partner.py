@@ -113,7 +113,6 @@ class ResPartner(models.Model):
             self.address_type, self
         )
 
-    @api.multi
     def action_enable_for_shop(self):
         self.write({"shopinvader_enabled": True})
         # TODO: maybe better to hook to an event?

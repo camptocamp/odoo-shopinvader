@@ -107,10 +107,11 @@ class ShopinvaderNotification(models.Model):
     @job(default_channel="root.shopinvader.notification")
     def send(self, record_id):
         self.ensure_one()
-        values = self._get_email_values()
-        return self.template_id.send_mail(record_id, email_values=values)
+        return self.template_id.with_context(
+            **self._get_template_context()
+        ).send_mail(record_id)
 
-    def _get_email_values(self):
+    def _get_template_context(self):
         return {
             "notification_type": self.notification_type,
             "shopinvader_backend": self.backend_id,

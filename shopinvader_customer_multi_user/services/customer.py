@@ -8,7 +8,7 @@ from odoo.addons.component.core import Component
 class CustomerService(Component):
     _inherit = "shopinvader.customer.service"
 
-    def _prepare_params(self, params):
+    def _prepare_params(self, params, mode="create"):
         vals = super()._prepare_params(params)
         company_token = vals.pop("company_token", None)
         if company_token and self.shopinvader_backend.customer_multi_user:
@@ -37,5 +37,4 @@ class CustomerService(Component):
     def _to_customer_info(self, partner):
         info = super()._to_customer_info(partner)
         info["company_token"] = partner.invader_user_token
-        info["is_company"] = self.partner_user.is_company
         return info

@@ -21,7 +21,6 @@ class ShopinvaderPartner(models.Model):
             partner.assign_invader_user_token()
         return binding
 
-    @api.multi
     def is_invader_user(self):
         self.ensure_one()
         return self.record_id.is_invader_user()

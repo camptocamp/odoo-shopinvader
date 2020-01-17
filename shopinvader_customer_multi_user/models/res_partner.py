@@ -45,12 +45,10 @@ class ResPartner(models.Model):
     def find_by_invader_user_token(self, token):
         return self.search([("invader_user_token", "=", token)], limit=1)
 
-    @api.multi
     def assign_invader_user_token(self, token=None):
         token = token or self._generate_invader_user_token()
         self.write({"invader_user_token": token})
 
-    @api.multi
     def action_regenerate_invader_user_token(self):
         # NOTE: for buttons we cannot use `_generate_invader_user_token`
         # directly because the client passes the context as 1st argument
@@ -60,12 +58,10 @@ class ResPartner(models.Model):
     def invader_client_user_type(self):
         return "invader_client_user"
 
-    @api.multi
     def is_invader_user(self):
         self.ensure_one()
         return self.type == self.invader_client_user_type()
 
-    # @api.multi
     # def get_parent_binding(self, backend):
     #     self.ensure_one()
     #     parent_partner = self.parent_id

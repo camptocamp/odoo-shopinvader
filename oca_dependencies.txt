@@ -12,3 +12,4 @@ product-attribute
 partner-contact
 odoo-misc https://github.com/shopinvader/odoo-misc 13.0
 sale-workflow https://github.com/camptocamp/sale-workflow 13-sale_shipping_info_helper
+social

@@ -302,8 +302,6 @@ class CommonConnectedCartCase(CartCase):
 
 
 class ConnectedCartCase(CommonConnectedCartCase, CartClearTest):
-    maxDiff = None
-
     def test_to_openapi(self):
         self._test_to_openapi()
 

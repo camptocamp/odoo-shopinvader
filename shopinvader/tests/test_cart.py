@@ -302,11 +302,18 @@ class CommonConnectedCartCase(CartCase):
 
 
 class ConnectedCartCase(CommonConnectedCartCase, CartClearTest):
+    maxDiff = None
+
+    def test_to_openapi(self):
+        self._test_to_openapi()
+
     def test_set_shipping_address_no_default_invocing(self):
         cart = self.cart
         self.backend.cart_checkout_address_policy = "no_defaults"
         invoice_addr = self.env.ref("shopinvader.partner_1_address_2")
         cart.partner_invoice_id = invoice_addr
+
+    def test_set_shipping_address(self):
         self.service.dispatch(
             "update", params={"shipping": {"address": {"id": self.address.id}}}
         )

@@ -115,6 +115,22 @@ class CartService(Component):
 
         return self._to_json(new_cart)
 
+    # private methods
+    def _to_json(self, cart):
+        if not cart:
+            return {
+                "data": {},
+                "store_cache": {"cart": {}},
+                "set_session": {"cart_id": 0},
+            }
+        res = super()._to_json(cart)[0]
+
+        return {
+            "data": res,
+            "set_session": {"cart_id": res["id"]},
+            "store_cache": {"cart": res},
+        }
+
     # Validator
     def _cart_validator_exists(self, field, value, error):
         """
@@ -145,11 +161,38 @@ class CartService(Component):
     def _validator_return_copy(self):
         return Validator({}, allow_unknown=True)
 
+    def _schema_for_full_cart(self):
+        return {
+            # TODO: optional return all empty dicts
+            "data": {"type": "dict", "schema": self._schema_for_cart()},
+            # TODO: these should probably be handled by base service class
+            "set_session": {
+                "type": "dict",
+                "schema": self._schema_for_session(),
+            },
+            "store_cache": {"type": "dict", "schema": self._schema_for_cart()},
+        }
+
     def _validator_search(self):
         return {}
 
+    def _validator_return_search(self):
+        return self._schema_for_full_cart()
+
+    def _schema_for_cart(self):
+        return self._schema_for_one_sale()
+
+    def _schema_for_session(self):
+        return {
+            # TODO
+            "cart_id": {"coerce": to_int, "type": "integer"}
+        }
+
     def _validator_clear(self):
         return {}
+
+    def _validator_return_clear(self):
+        return self._schema_for_full_cart()
 
     def _subvalidator_shipping(self):
         return {
@@ -190,6 +233,9 @@ class CartService(Component):
             "note": {"type": "string"},
         }
 
+    def _validator_return_update(self):
+        return self._schema_for_full_cart()
+
     def _validator_add_item(self):
         return {
             "product_id": {
@@ -200,16 +246,25 @@ class CartService(Component):
             "item_qty": {"coerce": float, "required": True, "type": "float"},
         }
 
+    def _validator_return_add_item(self):
+        return self._schema_for_full_cart()
+
     def _validator_update_item(self):
         return {
             "item_id": {"coerce": to_int, "required": True, "type": "integer"},
             "item_qty": {"coerce": float, "required": True, "type": "float"},
         }
 
+    def _validator_return_update_item(self):
+        return self._schema_for_full_cart()
+
     def _validator_delete_item(self):
         return {
             "item_id": {"coerce": to_int, "required": True, "type": "integer"}
         }
+
+    def _validator_return_delete_item(self):
+        return self._schema_for_full_cart()
 
     # The following method are 'private' and should be never never NEVER call
     # from the controller.
@@ -389,21 +444,6 @@ class CartService(Component):
             raise UserError(_("Invalid step code %s") % code)
         else:
             return step
-
-    def _to_json(self, cart):
-        if not cart:
-            return {
-                "data": {},
-                "store_cache": {"cart": {}},
-                "set_session": {"cart_id": 0},
-            }
-        res = super(CartService, self)._to_json(cart)[0]
-
-        return {
-            "data": res,
-            "set_session": {"cart_id": res["id"]},
-            "store_cache": {"cart": res},
-        }
 
     def _get(self, create_if_not_found=True):
         """

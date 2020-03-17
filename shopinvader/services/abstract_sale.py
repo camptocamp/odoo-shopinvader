@@ -209,7 +209,7 @@ class AbstractSaleService(AbstractComponent):
                 "type": "dict",
                 "schema": self.component(
                     usage="addresses"
-                )._schema_for_one_address(),
+                )._schema_for_one_address(access_info=False),
             }
         }
 
@@ -231,7 +231,7 @@ class AbstractSaleService(AbstractComponent):
                 "type": "dict",
                 "schema": self.component(
                     usage="addresses"
-                )._schema_for_one_address(),
+                )._schema_for_one_address(access_info=False),
             }
         }
 

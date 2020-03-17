@@ -302,6 +302,9 @@ class CommonConnectedCartCase(CartCase):
 
 
 class ConnectedCartCase(CommonConnectedCartCase, CartClearTest):
+    def test_to_openapi(self):
+        self._test_to_openapi()
+
     def test_set_shipping_address(self):
         self.service.dispatch(
             "update", params={"shipping": {"address": {"id": self.address.id}}}

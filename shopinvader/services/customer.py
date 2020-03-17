@@ -38,8 +38,28 @@ class CustomerService(Component):
     # The following method are 'private' and should be never never NEVER call
     # from the controller.
     # All params are trusted as they have been checked before
+
+    # TODO: move to base service class
+    def _schema_for_store_cache(self, mapping):
+        schema = {"type": "dict", "schema": {}, "nullable": True}
+        for key, schema_value in mapping.items():
+            schema["schema"][key] = schema_value
+        return schema
+
+    def _validator_return_get(self):
+        customer_schema = self._schema_for_to_customer_info()
+        return {
+            "data": {"type": "dict", "schema": customer_schema},
+            "store_cache": self._schema_for_store_cache(
+                {"customer": {"type": "dict", "schema": customer_schema}}
+            ),
+        }
+
     def _validator_sign_in(self):
         return {}
+
+    def _validator_return_sign_in(self):
+        return self._schema_for_assign_cart_and_get_store_cache()
 
     def _validator_create(self):
         address = self.component(usage="addresses")
@@ -100,6 +120,28 @@ class CustomerService(Component):
             result["set_session"] = {"cart_id": cart["id"]}
         return result
 
+    def _schema_for_assign_cart_and_get_store_cache(self):
+        cart_service = self.component(usage="cart")
+        return {
+            "store_cache": self._schema_for_store_cache(
+                {
+                    "cart": {
+                        "type": "dict",
+                        "schema": cart_service._schema_for_one_sale(),
+                    },
+                    "customer": {
+                        "type": "dict",
+                        "schema": self._schema_for_to_customer_info(),
+                    },
+                }
+            ),
+            "set_session": {
+                "nullable": True,
+                "type": "dict",
+                "schema": cart_service._schema_for_session(),
+            },
+        }
+
     def _to_customer_info(self, partner):
         address = self.component(usage="addresses")
         info = address._to_json(partner)[0]
@@ -113,3 +155,52 @@ class CustomerService(Component):
         response = self._assign_cart_and_get_store_cache()
         response["data"] = {"id": self.partner.id, "name": self.partner.name}
         return response
+
+    def _validator_return_create(self):
+        schema = self._schema_for_assign_cart_and_get_store_cache()
+        schema.update(
+            {
+                "data": {
+                    "type": "dict",
+                    "schema": {
+                        "id": {"type": "integer"},
+                        "name": {"type": "string"},
+                    },
+                }
+            }
+        )
+        return schema
+
+    def _schema_for_to_customer_info(self):
+        schema = self.component(usage="addresses")._schema_for_one_address()
+        schema["access"] = {
+            "type": "dict",
+            "schema": self._schema_for_access(),
+        }
+        schema["permissions"] = {
+            "type": "dict",
+            "schema": self._schema_for_permissions(),
+        }
+        return schema
+
+    def _schema_for_access(self):
+        return {
+            "read": {"type": "boolean"},
+            "update": {"type": "boolean"},
+            "delete": {"type": "boolean"},
+        }
+
+    def _schema_for_permissions(self):
+        return {
+            "addresses": {
+                "type": "dict",
+                "schema": {"create": {"type": "boolean"}},
+            },
+            "cart": {
+                "type": "dict",
+                "schema": {
+                    "add_item": {"type": "boolean"},
+                    "update_item": {"type": "boolean"},
+                },
+            },
+        }

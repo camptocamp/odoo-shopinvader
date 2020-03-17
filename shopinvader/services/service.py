@@ -93,6 +93,10 @@ class BaseShopinvaderService(AbstractComponent):
             "scope": {"type": "dict", "nullable": True},
         }
 
+    def _paginate_search_no_result(self):
+        """Shortcut for no result when you don't want to return anything."""
+        return {"size": 0, "data": []}
+
     def _paginate_search(self, default_page=1, default_per_page=5, **params):
         """
         Build a domain and search on it.
@@ -119,6 +123,24 @@ class BaseShopinvaderService(AbstractComponent):
             domain, limit=per_page, offset=per_page * (page - 1)
         )
         return {"size": total_count, "data": self._to_json(records)}
+
+    def _to_json(self, records):
+        raise NotImplementedError()
+
+    def _schema_for_to_json(self):
+        raise NotImplementedError()
+
+    def _schema_for_paginate_search(self):
+        return {
+            "size": {"type": "integer"},
+            "data": self._schema_for_paginate_search_data(),
+        }
+
+    def _schema_for_paginate_search_data(self):
+        return {
+            "type": "list",
+            "schema": {"type": "dict", "schema": self._schema_for_to_json()},
+        }
 
     def _get(self, _id):
         domain = expression.normalize_domain(self._get_base_search_domain())

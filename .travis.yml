@@ -56,3 +56,7 @@ after_success:
 
 after_script:
   - travis_delete_algolia_index
+
+branches:
+  except:
+    - /^merge-branch-.*$/

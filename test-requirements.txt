@@ -8,3 +8,8 @@ vcrpy-unittest
 openupgradelib @ git+https://github.com/OCA/openupgradelib.git
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+
+# FIXME: TMP deps for shopinvader_sale_packaging
+odoo13-addon-stock_packaging_calculator @ git+https://github.com/OCA/stock-logistics-warehouse@refs/pull/918/head#subdirectory=setup/stock_packaging_calculator
+odoo13-addon-sale_order_line_packaging_qty @ git+https://github.com/OCA/sale-workflow@refs/pull/1114/head#subdirectory=setup/sale_order_line_packaging_qty

@@ -10,3 +10,6 @@ unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
 # TMP dep for `[MIG] product_stock_state: Migration to 13.0`
 git+https://github.com/OCA/product-attribute.git@refs/pull/645/head#subdirectory=setup/product_stock_state
+#odoo-test-helper
+# TMP dependency to include https://github.com/akretion/odoo-test-helper/pull/1
+git+git://github.com/simahawk/odoo-test-helper.git@master#egg=odoo-test-helper

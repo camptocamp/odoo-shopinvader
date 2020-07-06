@@ -4,10 +4,10 @@ from uuid import uuid4
 
 from dateutil import parser
 from odoo import fields
-from odoo.addons.shopinvader.tests.common import CommonCase
+from odoo.addons.shopinvader.tests.common import CommonCase, CommonTestDownload
 
 
-class TestDeliveryService(CommonCase):
+class TestDeliveryService(CommonCase, CommonTestDownload):
 
     maxDiff = None
 
@@ -236,3 +236,37 @@ class TestDeliveryService(CommonCase):
         data = result.get("data", [])
         self._check_data_content(data, pickings)
         return
+
+    def test_picking_download(self):
+        """
+        Data
+            * A target with a valid state
+        Case:
+            * Try to download the document
+        Expected result:
+            * An http response with the file to download
+        :param service: shopinvader service
+        :param target: recordset
+        :return:
+        """
+        picking = self._create_picking(partner=self.service.partner, sale=True)
+        self.assertEqual(picking.state, "confirmed")
+        self._test_download_allowed(self.service, picking)
+
+    def test_picking_download_failed(self):
+        """
+        Data
+            * A picking into an invalid/not allowed state
+        Case:
+            * Try to download the document
+        Expected result:
+            * MissingError should be raised
+        :param service: shopinvader service
+        :param target: recordset
+        :return:
+        """
+        picking = self._create_picking(
+            partner=self.service.partner, sale=False
+        )
+        self.assertEqual(picking.state, "draft")
+        self._test_download_not_allowed(self.service, picking)

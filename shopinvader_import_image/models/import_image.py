@@ -17,6 +17,8 @@ from urllib.request import urlopen
 from zipfile import ZipFile
 
 from odoo import _, api, exceptions, fields, models
+from odoo.addons.queue_job.job import job
+from odoo.tools import date_utils
 from odoo.tools.pycompat import csv_reader
 
 _logger = logging.getLogger(__name__)
@@ -28,10 +30,10 @@ except (ImportError, IOError) as err:
     _logger.debug(err)
 
 
-class ProductImageImportWizard(models.TransientModel):
+class ProductImageImportWizard(models.Model):
 
     _name = "shopinvader.import.product_image"
-    _description = "Wizard to import product images"
+    _description = "Handle import of shopinvader product images"
 
     storage_backend_id = fields.Many2one(
         "storage.backend", "Storage Backend", required=True
@@ -44,6 +46,16 @@ class ProductImageImportWizard(models.TransientModel):
         string="Product Model",
         required=True,
     )
+    source_type = fields.Selection(
+        [
+            ("url", "URL"),
+            ("zip_file", "Zip file"),
+            ("external_storage", "External storage"),
+        ],
+        string="Source type",
+        required=True,
+        default="url",
+    )
     file_csv = fields.Binary(string="CSV file", required=True)
     csv_header = fields.Char(
         string="CSV file header",
@@ -53,61 +65,82 @@ class ProductImageImportWizard(models.TransientModel):
     csv_delimiter = fields.Char(
         string="CSV file delimiter", default=",", required=True
     )
-    file_zip = fields.Binary("ZIP with images", required=False)
+    source_zipfile = fields.Binary("ZIP with images", required=False)
+    source_storage_backend_id = fields.Many2one(
+        "storage.backend", "Storage Backend with images"
+    )
+    external_csv_path = fields.Char(
+        string="Path to CSV file",
+        help="Relative path of the CSV file located in the external storage",
+    )
     options = fields.Serialized(readonly=True)
     overwrite = fields.Boolean(
         "Overwrite image with same name", sparse="options", default=False
     )
     create_missing_tags = fields.Boolean(sparse="options", default=False)
     report = fields.Serialized(readonly=True)
-    # FIXME: the report it's computed but is not displayed :/
     report_html = fields.Html(readonly=True, compute="_compute_report_html")
+    state = fields.Selection(
+        [("new", "New"), ("scheduled", "Scheduled"), ("done", "Done")],
+        string="Import state",
+        default="new",
+    )
+    done_on = fields.Datetime()
 
     @api.depends("report")
     def _compute_report_html(self):
+        tmpl = self.env.ref("shopinvader_import_image.report_html")
         for record in self:
             if not record.report:
                 record.report_html = ""
                 continue
-            report_html = (
-                "<div>"
-                + "\n".join(
-                    [
-                        "<p><strong>{}</strong></p><p>{}</p>".format(
-                            key, ", ".join(vals)
-                        )
-                        for key, vals in record.report.items()
-                    ]
-                )
-                + "</div>"
-            )
+            report_html = tmpl.render({"record": record})
             record.report_html = report_html
 
     @api.model
     def _get_base64(self, file_path):
+        res = {}
         binary = None
         mimetype = None
-        if validators.url(file_path):
-            binary = self._read_from_url(file_path)
-        elif self.file_zip:
-            binary = self._read_from_zip(file_path)
+        binary = getattr(self, "_read_from_" + self.source_type)(file_path)
         if binary:
             mimetype = magic.from_buffer(binary, mime=True)
-        return mimetype, binary and base64.encodestring(binary)
+            res = {"mimetype": mimetype, "b64": base64.encodestring(binary)}
+        return res
 
     def _read_from_url(self, file_path):
-        return urlopen(file_path).read()
+        if validators.url(file_path):
+            return urlopen(file_path).read()
+        return None
 
-    def _read_from_zip(self, file_path):
-        file_content = base64.b64decode(self.file_zip)
+    def _read_from_zip_file(self, file_path):
+        if not self.source_zipfile:
+            raise exceptions.UserError(_("No zip file provided!"))
+        file_content = base64.b64decode(self.source_zipfile)
         with closing(io.BytesIO(file_content)) as zip_file:
             with ZipFile(zip_file, "r") as z:
-                return z.read(file_path)
+                try:
+                    return z.read(file_path)
+                except KeyError:
+                    # File missing
+                    return None
+
+    def _read_from_external_storage(self, file_path):
+        if not self.source_storage_backend_id:
+            raise exceptions.UserError(_("No storage backend provided!"))
+        return self.source_storage_backend_id._get_bin_data(file_path)
+
+    def _read_csv(self):
+        if self.file_csv:
+            return base64.b64decode(self.file_csv)
+        elif self.external_csv_path:
+            return self.source_storage_backend_id._get_b64_data(
+                self.external_csv_path
+            )
 
     def _get_lines(self):
         lines = []
-        file_content = base64.b64decode(self.file_csv)
-        with closing(io.BytesIO(file_content)) as file_csv:
+        with closing(io.BytesIO(self._read_csv())) as file_csv:
             reader = csv_reader(file_csv, delimiter=self.csv_delimiter)
             headers = next(reader, None)
 
@@ -134,21 +167,37 @@ class ProductImageImportWizard(models.TransientModel):
     def _get_options(self):
         return self.options
 
-    def do_import(self):
+    def action_import(self):
         self.report = self.report_html = False
+        self.state = "scheduled"
+        return self.with_delay().do_import()
+
+    @job(default_channel="root.shopinvader.import.images")
+    def do_import(self):
         lines = self._get_lines()
         report = self._do_import(
             lines, self.product_model, options=self._get_options()
         )
-        self.report = report
-        return {"type": "ir.actions.act_view_reload"}
+        self.write(
+            {
+                "report": report,
+                "state": "done",
+                "done_on": fields.Datetime.now(),
+            }
+        )
+        return report
 
     def _do_import(self, lines, product_model, options=None):
         tag_obj = self.env["image.tag"]
         image_obj = self.env["storage.image"]
         relation_obj = self.env["product.image.relation"]
 
-        report = {"created": set()}
+        report = {
+            "created": set(),
+            "file_not_found": set(),
+            "missing": [],
+            "missing_tags": [],
+        }
         options = options or {}
 
         # do all query at once
@@ -167,7 +216,7 @@ class ProductImageImportWizard(models.TransientModel):
             [code for code in all_codes if not existing_by_code.get(code)]
         )
 
-        all_tags = [x["tag_name"] for x in lines]
+        all_tags = [x["tag_name"] for x in lines if x["tag_name"]]
         tags = tag_obj.search_read([("name", "in", all_tags)], ["name"])
         tag_by_name = {x["name"]: x["id"] for x in tags}
         missing_tags = set(all_tags).difference(set(tag_by_name.keys()))
@@ -184,6 +233,9 @@ class ProductImageImportWizard(models.TransientModel):
             line = lines_by_code[prod["default_code"]]
             file_path = line["file_path"]
             file_vals = self._prepare_file_values(file_path)
+            if not file_vals:
+                report["file_not_found"].add(prod["default_code"])
+                continue
             file_vals.update(
                 {"name": file_vals["name"], "alt_name": file_vals["name"]}
             )
@@ -213,16 +265,42 @@ class ProductImageImportWizard(models.TransientModel):
             )
             report["created"].add(prod["default_code"])
         report["created"] = sorted(report["created"])
+        report["file_not_found"] = sorted(report["file_not_found"])
         return report
 
     def _prepare_file_values(self, file_path, filetype="image"):
         name = os.path.basename(file_path)
-        mimetype, file_b64 = self._get_base64(file_path)
+        file_data = self._get_base64(file_path)
+        if not file_data:
+            return {}
         vals = {
-            "data": file_b64,
+            "data": file_data["b64"],
             "name": name,
             "file_type": filetype,
-            "mimetype": mimetype,
+            "mimetype": file_data["mimetype"],
             "backend_id": self.storage_backend_id.id,
         }
         return vals
+
+    @api.model
+    def _cron_cleanup_obsolete(self, days=7):
+        from_date = fields.Datetime.now().replace(
+            hour=23, minute=59, second=59
+        )
+        limit_date = date_utils.subtract(from_date, days)
+        records = self.search(
+            [("state", "=", "done"), ("done_on", "<=", limit_date)]
+        )
+        records.unlink()
+        _logger.info(
+            "Cleanup obsolete images import. %d records found.", len(records)
+        )
+
+    def _report_label_for(self, key):
+        labels = {
+            "created": _("Created"),
+            "file_not_found": _("Image file not found"),
+            "missing": _("Product not found"),
+            "missing_tags": _("Tags not found"),
+        }
+        return labels.get(key, key)

@@ -2,6 +2,7 @@
 # @author Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+import json
 import logging
 
 from odoo.addons.shopinvader_locomotive.tests.test_shopinvader_partner import (
@@ -67,8 +68,10 @@ class TestShopinvaderWishlistSync(CommonShopinvaderPartner):
                 str(self.prod1.id): [prod_set3.id],
                 str(self.prod2.id): [prod_set3.id],
             }
-            self.assertEqual(data["wishlists"], expected_wl)
-            self.assertEqual(data["product_wishlists"], expected_prods)
+            self.assertEqual(json.loads(data["wishlists"]), expected_wl)
+            self.assertEqual(
+                json.loads(data["product_wishlists"]), expected_prods
+            )
 
     def test_update_wishlist(self):
         self._init_job_counter()
@@ -143,5 +146,7 @@ class TestShopinvaderWishlistSync(CommonShopinvaderPartner):
                 str(self.prod2.id): [self.prod_set1.id],
                 str(self.prod3.id): [self.prod_set1.id, self.prod_set2.id],
             }
-            self.assertEqual(data["wishlists"], expected_wl)
-            self.assertEqual(data["product_wishlists"], expected_prods)
+            self.assertEqual(json.loads(data["wishlists"]), expected_wl)
+            self.assertEqual(
+                json.loads(data["product_wishlists"]), expected_prods
+            )

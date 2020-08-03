@@ -2,6 +2,7 @@
 # @author Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+import json
 from collections import defaultdict
 
 from odoo.addons.component.core import Component
@@ -37,10 +38,15 @@ class ShopinvaderPartnerExportMapper(Component):
         for line in all_lines:
             products[line.product_id.id].append(line.product_set_id.id)
         return {
-            "wishlists": {
-                x["id"]: x for x in wishlists.jsonify(self._wishlist_parser())
-            },
-            "product_wishlists": products,
+            # Locomotive does not support nested structured data plain.
+            # You must encode inner data explicitly.
+            "wishlists": json.dumps(
+                {
+                    x["id"]: x
+                    for x in wishlists.jsonify(self._wishlist_parser())
+                }
+            ),
+            "product_wishlists": json.dumps(products),
         }
 
     def _wishlist_parser(self):

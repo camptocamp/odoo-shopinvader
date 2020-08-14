@@ -28,45 +28,60 @@ class CommonAddressCase(CommonCase):
         with self.work_on_services(partner=self.partner) as work:
             self.address_service = work.component(usage="addresses")
 
-    def check_data(cls, address, data):
-        for key in data:
+    def check_data(self, address, data):
+        compare_data = {}
+        for key, value in data.items():
+            odoo_key = key
             if key == "partner_email":
                 continue
-            elif key == "country":
-                cls.assertEqual(address.country_id.id, data[key]["id"])
-            else:
-                cls.assertEqual(address[key], data[key])
+            elif key in ("country", "state", "title", "industry_id"):
+                value = value["id"]
+            if key in ("country", "state"):
+                odoo_key = key + "_id"
+            compare_data[odoo_key] = value
+        self.assertRecordValues(address, [compare_data])
 
 
 class AddressTestCase(object):
-    def test_add_address(self):
-        address_ids = [
+    def _test_create_address(self, params, expected):
+        existing = [
             address["id"] for address in self.address_service.search()["data"]
         ]
-        address_list = self.address_service.dispatch(
-            "create", params=self.address_params
-        )["data"]
-        for address in address_list:
-            if address["id"] not in address_ids:
-                created_address = address
-        self.assertIsNotNone(created_address)
-        address = self.env["res.partner"].browse(created_address["id"])
-        self.assertEqual(address.parent_id, self.partner)
-        self.check_data(address, self.address_params)
+        address_list = self.address_service.dispatch("create", params=params)[
+            "data"
+        ]
+        created_id = [
+            address["id"]
+            for address in address_list
+            if address["id"] not in existing
+        ][0]
+        address = self.env["res.partner"].browse(created_id)
+        self.check_data(address, expected)
+
+    def test_add_address(self):
+        # no email, verify defaults
+        params = dict(self.address_params, parent_id=self.partner.id)
+        # type defaults to `other`
+        expected = dict(params, type="other")
+        self._test_create_address(params, expected)
+        # pass email and type
+        params = dict(params, email="purple@test.oca", type="invoice")
+        expected = dict(params)
+        self._test_create_address(params, expected)
+
+    def _test_update_address(self, address_id, params, expected):
+        self.address_service.dispatch("update", address_id, params=params)
+        address = self.env["res.partner"].browse(address_id)
+        self.check_data(address, expected)
 
     def test_update_address(self):
-        params = self.address_params
-        self.address_service.dispatch("update", self.address.id, params=params)
-        self.assertEqual(self.address.parent_id, self.partner)
-        self.check_data(self.address, params)
-
-    # TODO MIGRATE
-    #    def test_update_main_address(self):
-    #        params = self.address_params
-    #        params['id'] = self.partner.id
-    #        self.address_service.update(params)
-    #        self.check_data(self.partner, params)
-    #
+        params = dict(self.address_params, parent_id=self.partner.id)
+        expected = dict(params)
+        self._test_update_address(self.address.id, params, expected)
+        params = dict(params, email="foo@baz.test", type="contact")
+        # "contact" type get the address from the parent
+        expected = dict(params, street=self.partner.street)
+        self._test_update_address(self.address.id, params, expected)
 
     def test_read_address_profile(self):
         res = self.address_service.dispatch(

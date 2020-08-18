@@ -10,3 +10,8 @@ unittest2 # For shopinvader test_controller, which inherits component
 #odoo-test-helper
 # TMP dependency to include https://github.com/akretion/odoo-test-helper/pull/1
 git+git://github.com/simahawk/odoo-test-helper.git@master#egg=odoo-test-helper
+odoo-test-helper
+
+# [13.0][ADD] sale_product_set_packaging_qty
+# https://github.com/OCA/sale-workflow/pull/1192
+odoo13-addon-sale-product-set-packaging-qty @ git+https://github.com/OCA/sale-workflow.git@refs/pull/1192/head#subdirectory=setup/sale_product_set_packaging_qty

@@ -124,7 +124,6 @@ class TestAlgoliaBackend(VCRMixin, TestBindingIndexBase):
         settings_en = self.env["shopinvader.variant"]._get_facetting_values(
             self.backend, self.env.ref("base.lang_en")
         )
-        self.shopinvader_backend.filter_ids.invalidate_cache(["display_name"])
         settings_fr = self.env["shopinvader.variant"]._get_facetting_values(
             self.backend, self.env.ref("base.lang_fr")
         )

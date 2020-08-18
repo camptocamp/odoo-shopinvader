@@ -61,5 +61,7 @@ class ShopinvaderProduct(models.Model):
         # for every filter/attribute
         # to unify them in indexes and Locomotive settings.
         filters = invader_backend.with_context(lang=lang.code).filter_ids
+        # Avoid value cached by previous call w/ another lang
+        filters.invalidate_cache(["display_name"])
         filter_facetting_values = [f.display_name for f in filters]
         return default + filter_facetting_values

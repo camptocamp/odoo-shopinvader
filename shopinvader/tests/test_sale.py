@@ -9,18 +9,22 @@ from .common import CommonCase, CommonTestDownload
 
 
 class SaleCase(CommonCase, CommonTestDownload):
-    def setUp(self, *args, **kwargs):
-        super(SaleCase, self).setUp(*args, **kwargs)
-        self.sale = self.env.ref("shopinvader.sale_order_2")
-        self.partner = self.env.ref("shopinvader.partner_1")
-        self.register_payments_obj = self.env["account.payment.register"]
-        self.journal_obj = self.env["account.journal"]
-        self.payment_method_manual_in = self.env.ref(
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.sale = cls.env.ref("shopinvader.sale_order_2")
+        cls.partner = cls.env.ref("shopinvader.partner_1")
+        cls.register_payments_obj = cls.env["account.payment.register"]
+        cls.journal_obj = cls.env["account.journal"]
+        cls.payment_method_manual_in = cls.env.ref(
             "account.account_payment_method_manual_in"
         )
-        self.bank_journal_euro = self.journal_obj.create(
+        cls.bank_journal_euro = cls.journal_obj.create(
             {"name": "Bank", "type": "bank", "code": "BNK6278"}
         )
+
+    def setUp(self, *args, **kwargs):
+        super(SaleCase, self).setUp(*args, **kwargs)
         with self.work_on_services(partner=self.partner) as work:
             self.service = work.component(usage="sales")
 
@@ -190,3 +194,31 @@ class SaleCase(CommonCase, CommonTestDownload):
         sale.shopinvader_backend_id = self.backend
         self.assertNotEqual(sale.partner_id, self.service.partner)
         self._test_download_not_owner(self.service, sale)
+
+    # TODO (long-term): this test is not specifically for sale.order.
+    # This as many other tests should be moved to a generic test case
+    # to ensure core feature a working on independently.
+    def test_sale_search_order(self):
+        order1 = self.sale
+        order1.date_order = "2020-08-18"
+        order1.action_confirm_cart()
+        order2 = order1.copy({"date_order": "2020-08-31"})
+        order2.action_confirm_cart()
+        res = self.service.search()
+        self.assertEqual(len(res["data"]), 2)
+        # by default order is `_order = 'date_order desc, id desc'`
+        self.assertEqual(res["data"][0]["id"], order2.id)
+        self.assertEqual(res["data"][1]["id"], order1.id)
+        # change ordering
+        res = self.service.dispatch(
+            "search", params={"order": "date_order asc"}
+        )
+        self.assertEqual(len(res["data"]), 2)
+        self.assertEqual(res["data"][0]["id"], order1.id)
+        self.assertEqual(res["data"][1]["id"], order2.id)
+        order1.name = "O1"
+        order2.name = "O2"
+        res = self.service.dispatch("search", params={"order": "name desc"})
+        self.assertEqual(len(res["data"]), 2)
+        self.assertEqual(res["data"][0]["id"], order2.id)
+        self.assertEqual(res["data"][1]["id"], order1.id)

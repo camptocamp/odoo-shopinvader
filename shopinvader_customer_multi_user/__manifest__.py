@@ -10,5 +10,9 @@
     "author": "Camptocamp SA",
     "website": "https://github.com/shopinvader/odoo-shopinvader",
     "depends": ["shopinvader"],
-    "data": ["views/shopinvader_backend.xml", "views/partner_view.xml"],
+    "data": [
+        "views/shopinvader_backend.xml",
+        "views/partner_view.xml",
+        "views/shopinvader_partner_view.xml",
+    ],
 }

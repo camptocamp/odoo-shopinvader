@@ -13,14 +13,38 @@ class ConnectedItemCase(ItemCaseMixin, CommonCase):
         ItemCaseMixin._setup_products(cls)
         cls.partner = cls.env.ref("shopinvader.partner_1")
         cls.cart = cls.env.ref("shopinvader.sale_order_2")
+        pkg_box_type = cls.env["product.packaging.type"].create(
+            {"name": "Box", "code": "box", "sequence": 0}
+        )
+        pkg_big_box_type = cls.env["product.packaging.type"].create(
+            {"name": "Big Box", "code": "big-box", "sequence": 0}
+        )
+        pkg_pallet_type = cls.env["product.packaging.type"].create(
+            {"name": "Pallet", "code": "pallet", "sequence": 0}
+        )
         cls.pkg_box = cls.env["product.packaging"].create(
-            {"name": "Box", "product_id": cls.product_1.id, "qty": 50}
+            {
+                "name": "Box",
+                "product_id": cls.product_1.id,
+                "qty": 50,
+                "packaging_type_id": pkg_box_type.id,
+            }
         )
         cls.pkg_big_box = cls.env["product.packaging"].create(
-            {"name": "Big Box", "product_id": cls.product_1.id, "qty": 200}
+            {
+                "name": "Big Box",
+                "product_id": cls.product_1.id,
+                "qty": 200,
+                "packaging_type_id": pkg_big_box_type.id,
+            }
         )
         cls.pkg_pallet = cls.env["product.packaging"].create(
-            {"name": "Pallet", "product_id": cls.product_1.id, "qty": 2000}
+            {
+                "name": "Pallet",
+                "product_id": cls.product_1.id,
+                "qty": 2000,
+                "packaging_type_id": pkg_pallet_type.id,
+            }
         )
 
     def setUp(self):

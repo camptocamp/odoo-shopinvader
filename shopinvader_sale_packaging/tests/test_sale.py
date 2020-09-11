@@ -12,11 +12,15 @@ class TestSaleOrderPackaging(CommonCase):
         cls.sale = cls.env.ref("shopinvader.sale_order_2")
         cls.sale_line1 = cls.env.ref("shopinvader.sale_order_line_4")
         cls.sale_line2 = cls.env.ref("shopinvader.sale_order_line_5")
+        pkg_box_type = cls.env["product.packaging.type"].create(
+            {"name": "Box", "code": "box", "sequence": 0}
+        )
         cls.pkg_box = cls.env["product.packaging"].create(
             {
                 "name": "Box",
                 "product_id": cls.sale_line1.product_id.id,
                 "qty": 100,
+                "packaging_type_id": pkg_box_type.id,
             }
         )
         cls.sale_line1.write(

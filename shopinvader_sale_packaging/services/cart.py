@@ -21,7 +21,10 @@ class CartService(Component):
         # TODO: in theory we should be able to skip prod qty
         # since it's computed in `sale_order_line_packaging_qty `
         res = super()._prepare_cart_item(params, cart)
-        res.update(self._packaging_values_from_params(params))
+        pkg_params = self._packaging_values_from_params(params)
+        if pkg_params:
+            res.pop("product_uom_qty", None)
+            res.update(pkg_params)
         return res
 
     def _get_line_copy_vals(self, line):
@@ -33,6 +36,7 @@ class CartService(Component):
                     "packaging_qty": line.product_packaging_qty,
                 }
             )
+            res.pop("product_uom_qty", None)
         return res
 
     def _upgrade_cart_item_quantity_vals(self, item, params, **kw):

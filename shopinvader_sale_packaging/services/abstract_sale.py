@@ -25,16 +25,19 @@ class AbstractSaleService(AbstractComponent):
             "packaging_by_qty": [],
         }
         if line.product_packaging:
-            pkg_vals.update(
-                {
-                    "packaging": line.product_packaging.jsonify(
-                        ["id", "name"]
-                    )[0],
-                    "packaging_qty": line.product_packaging_qty,
-                    "packaging_by_qty": self._packaging_info_by_qty(
-                        line.product_id, line.product_uom_qty
-                    ),
-                }
-            )
+            pkg_vals.update(self._convert_one_line_packaging(line))
         res.update(pkg_vals)
         return res
+
+    def _convert_one_line_packaging(self, line):
+        return {
+            "packaging": {
+                "id": line.product_packaging.id,
+                # packaging type name is translatable, better than pkg.name
+                "name": line.product_packaging.packaging_type_id.name,
+            },
+            "packaging_qty": line.product_packaging_qty,
+            "packaging_by_qty": self._packaging_info_by_qty(
+                line.product_id, line.product_uom_qty
+            ),
+        }

@@ -195,7 +195,14 @@ class ShopinvaderBackend(models.Model):
         default=lambda self: self._default_partner_industry_ids(),
     )
     # Invoice settings
-    invoice_settings = Serialized()
+    invoice_settings = Serialized(
+        # Default values on the sparse fields work only for create
+        # and does not provide defaults for existing records.
+        default={
+            "invoice_linked_to_sale_only": True,
+            "invoice_access_open": False,
+        }
+    )
     invoice_linked_to_sale_only = fields.Boolean(
         default=True,
         string="Only sale invoices",

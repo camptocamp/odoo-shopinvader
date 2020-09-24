@@ -41,7 +41,7 @@ class ItemCaseMixin(object):
         )
 
     def check_product_and_qty(self, line, product_id, qty):
-        self.assertEqual(line["product"]["id"], product_id)
+        self.assertEqual(line["product"]["objectID"], product_id)
         self.assertEqual(line["qty"], qty)
 
     def remove_cart(self):

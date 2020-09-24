@@ -17,6 +17,10 @@ class WishlistCase(CommonWishlistCase):
         cls.product_packaging = cls.env["product.packaging"].create(
             {"name": "PKG TEST", "product_id": cls.prod1.id, "qty": 4}
         )
+        # Make sure our products' data is up to date
+        cls._recompute_json(
+            cls, cls.prod_set.mapped("set_line_ids.product_id")
+        )
 
     def test_create(self):
         params = dict(self.wl_params)

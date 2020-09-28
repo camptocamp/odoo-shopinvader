@@ -79,6 +79,11 @@ class CommonMixin(ComponentMixin):
     def _install_lang(self, lang_xml_id):
         return _install_lang_odoo(self.env, lang_xml_id)
 
+    def _test_to_openapi(self, service=None):
+        service = service or self.service
+        # will raise if it fails to generate the openapi specs
+        service.to_openapi()
+
 
 class CommonCase(SavepointCase, CommonMixin):
 

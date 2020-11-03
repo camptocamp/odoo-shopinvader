@@ -3,8 +3,6 @@
 
 import json
 
-from odoo.addons.connector_search_engine.tests.models import SeBackendFake
-
 from .common import LocoCommonCase, mock_site_api
 
 
@@ -15,6 +13,13 @@ class TestSiteSearchEngineExportBase(LocoCommonCase):
     @classmethod
     def setUpClass(cls):
         super(TestSiteSearchEngineExportBase, cls).setUpClass()
+        # Avoid to mess up with other modules.
+        # TODO: refactor w/ odoo_test_helper
+        from odoo.addons.connector_search_engine.tests.models import (
+            SeBackendFake,
+        )
+
+        cls.SeBackendFake = SeBackendFake
         cls._setup_search_engine()
         cls.routes = [
             [
@@ -82,9 +87,9 @@ class TestSiteSearchEngineExportBase(LocoCommonCase):
 class TestSiteSearchEngineExport(TestSiteSearchEngineExportBase):
     @classmethod
     def _setup_search_engine(cls):
-        SeBackendFake._test_setup_model(cls.env)
+        cls.SeBackendFake._test_setup_model(cls.env)
         cls.se_backend = (
-            cls.env[SeBackendFake._name]
+            cls.env[cls.SeBackendFake._name]
             .create({"name": "Fake SE"})
             .se_backend_id
         )
@@ -119,7 +124,7 @@ class TestSiteSearchEngineExport(TestSiteSearchEngineExportBase):
 
     @classmethod
     def tearDownClass(cls):
-        SeBackendFake._test_teardown_model(cls.env)
+        cls.SeBackendFake._test_teardown_model(cls.env)
         super(TestSiteSearchEngineExport, cls).tearDownClass()
 
     def test_search_engine_synchronize_01(self):

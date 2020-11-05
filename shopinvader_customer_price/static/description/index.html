@@ -368,7 +368,13 @@ ul.auto-toc {
 !! changes will be overwritten.                   !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
 <p><a class="reference external" href="https://odoo-community.org/page/development-status"><img alt="Beta" src="https://img.shields.io/badge/maturity-Beta-yellow.png" /></a> <a class="reference external" href="http://www.gnu.org/licenses/agpl-3.0-standalone.html"><img alt="License: AGPL-3" src="https://img.shields.io/badge/licence-AGPL--3-blue.png" /></a> <a class="reference external" href="https://github.com/OCA/shopinvader/tree/13.0/shopinvader_customer_price"><img alt="OCA/shopinvader" src="https://img.shields.io/badge/github-OCA%2Fshopinvader-lightgray.png?logo=github" /></a> <a class="reference external" href="https://translation.odoo-community.org/projects/shopinvader-13-0/shopinvader-13-0-shopinvader_customer_price"><img alt="Translate me on Weblate" src="https://img.shields.io/badge/weblate-Translate%20me-F47D42.png" /></a></p>
-<p>Expose endpoint to fetch customer prices for products.</p>
+<p>Handle customer specific prices.</p>
+<p>Provides:</p>
+<ul class="simple">
+<li>endpoint <cite>/customer_price/products</cite> to fetch customer prices for products.</li>
+<li>backend configuration to state which pricelist should be used by partner
+(by selecting a partner field that relates to pricelists)</li>
+</ul>
 <p><strong>Use case</strong></p>
 <p>Thousands of customers and at least 1 pricelist per each customer.
 You want to display customer specific prices in the frontend on demand.
@@ -380,8 +386,10 @@ is the delegation of products’ data indexing to external search engines.</p>
 if you have very special prices per each customer that’s a blocker,
 and you’d need to index all prices for all customers to make it work seemlessly.</p>
 <p><strong>Warning</strong></p>
-<p>It’s strongly recomended to not call the endpoint for each product on search results
+<p>It’s strongly recommended to not call the endpoint for each product on search results
 otherwise you’ll get potentially thousands of requests to Odoo.</p>
+<p>Also, when setting the pricelist field for the partner,
+beware that prices in the indexes might differ from the prices in the cart.</p>
 <p><strong>Table of contents</strong></p>
 <div class="contents local topic" id="contents">
 <ul class="simple">

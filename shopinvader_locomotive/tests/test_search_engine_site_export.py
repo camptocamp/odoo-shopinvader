@@ -15,6 +15,13 @@ class TestSiteSearchEngineExportBase(LocoCommonCase):
     @classmethod
     def setUpClass(cls):
         super(TestSiteSearchEngineExportBase, cls).setUpClass()
+        # Avoid to mess up with other modules.
+        # TODO: refactor w/ odoo_test_helper
+        from odoo.addons.connector_search_engine.tests.models import (
+            SeBackendFake,
+        )
+
+        cls.SeBackendFake = SeBackendFake
         cls._setup_search_engine()
         cls.routes = [
             [
@@ -92,7 +99,7 @@ class TestSiteSearchEngineExport(TestSiteSearchEngineExportBase):
         cls.loader.update_registry((SeBackendFake,))
         # ->/ Load fake models
         cls.se_backend = (
-            cls.env[SeBackendFake._name]
+            cls.env[cls.SeBackendFake._name]
             .create({"name": "Fake SE"})
             .se_backend_id
         )

@@ -45,6 +45,7 @@ class CustomerPriceService(Component):
             ("price", self._get_price),
         ]
 
+    # TODO: probably better to wrap the value w/ the partner role?
     def _get_price(self, record, fname):
         pricelist = self.shopinvader_backend._get_cart_pricelist(self.partner)
         fposition = self.shopinvader_backend._get_fiscal_position(self.partner)

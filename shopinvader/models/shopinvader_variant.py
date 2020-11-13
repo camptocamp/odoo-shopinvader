@@ -150,8 +150,9 @@ class ShopinvaderVariant(models.Model):
         self.ensure_one()
         res = {}
         pricelist = self.backend_id.pricelist_id
+        default_role = self.backend_id.customer_default_role
         if pricelist:
-            res["default"] = self._get_price(
+            res[default_role] = self._get_price(
                 pricelist, None, self.backend_id.company_id
             )
         return res
@@ -176,11 +177,13 @@ class ShopinvaderVariant(models.Model):
                 variant_attributes[sanitized_key] = att_value.name
             record.variant_attributes = variant_attributes
 
-    def _get_price(self, pricelist, fposition, company=None):
+    def _get_price(self, pricelist, fposition=None, company=None):
         self.ensure_one()
-        return self._get_price_per_qty(1, pricelist, fposition, company)
+        return self._get_price_per_qty(
+            1, pricelist, fposition=fposition, company=company
+        )
 
-    def _get_price_per_qty(self, qty, pricelist, fposition, company=None):
+    def _get_price_per_qty(self, qty, pricelist, fposition=None, company=None):
         product_id = self.record_id
         taxes = product_id.taxes_id.sudo().filtered(
             lambda r: not company or r.company_id == company

@@ -176,13 +176,11 @@ class ShopinvaderVariant(models.Model):
                 variant_attributes[sanitized_key] = att_value.name
             record.variant_attributes = variant_attributes
 
-    def _get_price(self, pricelist, fposition=None, company=None):
+    def _get_price(self, pricelist, fposition, company=None):
         self.ensure_one()
-        return self._get_price_per_qty(
-            1, pricelist, fposition=fposition, company=company
-        )
+        return self._get_price_per_qty(1, pricelist, fposition, company)
 
-    def _get_price_per_qty(self, qty, pricelist, fposition=None, company=None):
+    def _get_price_per_qty(self, qty, pricelist, fposition, company=None):
         product_id = self.record_id
         taxes = product_id.taxes_id.sudo().filtered(
             lambda r: not company or r.company_id == company

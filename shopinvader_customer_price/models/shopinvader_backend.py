@@ -24,18 +24,33 @@ class ShopinvaderBackend(models.Model):
     )
 
     @tools.ormcache("partner.id", "self.cart_pricelist_partner_field_id.id")
-    def _get_cart_pricelist(self, partner):
-        pricelist = super()._get_cart_pricelist(partner)
+    def _get_cart_pricelist_id(self, partner):
         if self.cart_pricelist_partner_field_id:
             pricelist = partner[self.cart_pricelist_partner_field_id.name]
+            return pricelist.id
+        return None
+
+    def _get_cart_pricelist(self, partner):
+        pricelist = super()._get_cart_pricelist(partner)
+        pricelist_id = self._get_cart_pricelist_id(partner)
+        if pricelist_id:
+            return self.env["product.pricelist"].browse(pricelist_id)
         return pricelist
 
     @tools.ormcache("partner.id", "self.company_id.id")
-    def _get_fiscal_position(self, partner):
+    def _get_fiscal_position_id(self, partner):
         fp_model = self.env["account.fiscal.position"].with_context(
             force_company=self.company_id.id
         )
         fpos_id = fp_model.get_fiscal_position(
             partner.id, delivery_id=partner.id,
         )
-        return fp_model.browse(fpos_id)
+        return fpos_id
+
+    def _get_fiscal_position(self, partner):
+        fpos_id = self._get_fiscal_position_id(partner)
+        return (
+            self.env["account.fiscal.position"].browse(fpos_id)
+            if fpos_id
+            else None
+        )

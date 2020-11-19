@@ -262,10 +262,10 @@ class WishlistService(Component):
             "id",
             "sequence",
             "quantity",
-            ("shopinvader_variant_id:product", self._json_parser_product),
+            ("shopinvader_variant_id:product", self._json_parser_product_data),
         ]
 
-    def _json_parser_product(self, rec, fname):
+    def _json_parser_product_data(self, rec, fname):
         return rec.shopinvader_variant_id.get_shop_data()
 
     def _get_existing_line(self, record, params, raise_if_not_found=False):

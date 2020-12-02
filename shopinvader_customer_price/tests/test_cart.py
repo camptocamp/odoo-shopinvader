@@ -28,7 +28,9 @@ class ConnectedItemCase(ItemCaseMixin, CommonCase):
     def test_default_pricelist(self):
         self.assertFalse(self.backend.cart_pricelist_partner_field_id)
         cart = self.service._get()
-        self.assertEqual(cart.pricelist_id, self.backend.pricelist_id)
+        self.assertEqual(
+            cart.pricelist_id, self.partner.property_product_pricelist
+        )
 
     def test_custom_pricelist(self):
         self.backend.cart_pricelist_partner_field_id = self.pricelist_field

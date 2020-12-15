@@ -54,7 +54,9 @@ class ProductLinkCaseBase(ProductCommonCase):
         cls.shopinvader_variant_3_2 = cls.variant_3_2._get_invader_variant(
             cls.backend, "en_US"
         )
-
+        cls.link_type_sym = cls.env["product.template.link.type"].create(
+            {"name": "One way link", "code": "one-way", "is_symmetric": False}
+        )
         cls._create_links()
 
     @classmethod
@@ -89,6 +91,13 @@ class ProductLinkCaseBase(ProductCommonCase):
                 ).id,
             }
         )
+        cls.link_one_way_3_2 = cls.env["product.template.link"].create(
+            {
+                "left_product_tmpl_id": cls.template_3.id,
+                "right_product_tmpl_id": cls.template_2.id,
+                "type_id": cls.link_type_sym.id,
+            }
+        )
 
 
 class ProductLinkCase(ProductLinkCaseBase):
@@ -109,12 +118,10 @@ class ProductLinkCase(ProductLinkCaseBase):
             "cross_selling": [{"id": main3.record_id.id}],
         }
         self.assertEqual(
-            self.shopinvader_variant_1_1.shopinvader_product_id.product_links,
-            expected,
+            self.shopinvader_variant_1_1.product_links, expected,
         )
         self.assertEqual(
-            self.shopinvader_variant_1_2.shopinvader_product_id.product_links,
-            expected,
+            self.shopinvader_variant_1_2.product_links, expected,
         )
 
         expected = {
@@ -122,12 +129,20 @@ class ProductLinkCase(ProductLinkCaseBase):
             "up_selling": [{"id": main1.record_id.id}],
         }
         self.assertEqual(
-            self.shopinvader_variant_2_1.shopinvader_product_id.product_links,
-            expected,
+            self.shopinvader_variant_2_1.product_links, expected,
         )
         self.assertEqual(
-            self.shopinvader_variant_2_2.shopinvader_product_id.product_links,
-            expected,
+            self.shopinvader_variant_2_2.product_links, expected,
+        )
+        expected = {
+            "cross_selling": [
+                {"id": main1.record_id.id},
+                {"id": main2.record_id.id},
+            ],
+        }
+        expected["one_way"] = [{"id": main2.record_id.id}]
+        self.assertEqual(
+            self.shopinvader_variant_3_2.product_links, expected,
         )
 
     def test_link_json_data(self):

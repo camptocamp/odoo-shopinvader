@@ -26,6 +26,10 @@ class PartnerValidator(Component):
                 ),
                 lambda partner: True,
             )
+            # TODO: this should raise an exception if not satisfied
+            # but the validation is done in the controller
+            # and the frontend is not able to handle it properly yet.
+            # See `InvaderController._get_partner_from_headers`
             validator(partner)
 
     def _validate_partner_all(self, partner):
@@ -116,6 +120,9 @@ class PartnerValidator(Component):
 
     def is_partner_validated(self, partner):
         """Check if given partner is enabled for current backend."""
-        if self.backend.validate_customers and not partner.shopinvader_enabled:
+        if (
+            self.backend.validate_customers
+            and not partner.is_shopinvader_active
+        ):
             return False
         return True

@@ -8,10 +8,14 @@ from odoo.osv import expression
 
 
 class CustomerPriceService(Component):
+    """Shopinvader service to expose customer specific product prices.
+    """
+
     _name = "shopinvader.customer.price.service"
     _inherit = "base.shopinvader.service"
     _usage = "customer_price"
     _expose_model = "shopinvader.variant"
+    _description = __doc__
 
     def products(self, **params):
         domain = expression.normalize_domain(self._get_base_search_domain())

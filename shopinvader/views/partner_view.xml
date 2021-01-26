@@ -7,34 +7,65 @@
         <field name="arch" type="xml">
             <notebook position="inside">
                 <page name="shopinvader" string="Shopinvader">
-                    <group name="extras">
-                        <div name="shopinvader_enabled">
-                            <label for="shopinvader_enabled" />
-                            <field name="shopinvader_enabled" nolabel="1" readonly="1"/>
-                            <button name="action_enable_for_shop" type="object"
-                                    string="Enable customer" attrs="{'invisible': [('shopinvader_enabled','=',True)]}"/>
-                        </div>
-                    </group>
-                    <field name="shopinvader_bind_ids">
+                    <separator string="Shopinvader users" />
+                    <field name="shopinvader_bind_ids" nolabel="1">
                         <tree editable="bottom">
                             <field name="backend_id"/>
                             <field name="external_id" readonly="True"/>
                             <field name="create_date" readonly="True"/>
                             <field name="sync_date" readonly="True"/>
+                            <field name="state"/>
                         </tree>
                     </field>
+                    <group name="extras">
+                      <group>
+                        <field name="address_type" readonly="1"/>
+                        <field name="has_shopinvader_user" invisible="1" />
+                        <field name="has_shopinvader_user_to_validate" attrs="{'invisible':[('has_shopinvader_user_to_validate','=',False)]}" />
+                        <field name="is_shopinvader_active" attrs="{'invisible':[('has_shopinvader_user','=',True)]}"/>
+                      </group>
+                    </group>
                 </page>
             </notebook>
-            <!-- add validation button to address kanban -->
-            <xpath expr="//field[@name='child_ids']/kanban/field[@name='display_name']" position="after">
-                <field name="shopinvader_enabled" />
-            </xpath>
             <xpath expr="//field[@name='child_ids']/kanban//div[hasclass('o_kanban_image')]" position="before">
-                <div t-if="!record.shopinvader_enabled.raw_value" class="float-right">
-                    <button name="action_enable_for_shop" type="object" class="btn btn-warning btn-sm">Shop: enable address</button>
+                <field name="address_type" invisible="1" />
+                <field name="has_shopinvader_user" invisible="1" />
+                <field name="has_shopinvader_user_to_validate" invisible="1" />
+                <div t-if="record.has_shopinvader_user_to_validate.raw_value" class="float-right">
+                    <a class="btn btn-sm btn-warning" name="action_shopinvader_validate" type="object" title="There's at least one Shopinvader user to validate">
+                        <i class="fa fa-check" aria-hidden="true"></i> Shop: validate user
+                    </a>
+                </div>
+                <div t-if="!record.has_shopinvader_user.raw_value and record.address_type.raw_value=='address' and !record.is_shopinvader_active.raw_value" class="float-right">
+                    <a class="btn btn-sm btn-warning"  name="action_shopinvader_address_validate" type="object" title="There's at least one address to validate">
+                        <i class="fa fa-check" aria-hidden="true"></i> Shop: validate address
+                    </a>
                 </div>
             </xpath>
         </field>
     </record>
+
+    <record id="action_sale_shopinvader_customer_to_validate" model="ir.actions.act_window">
+        <field name="name">Shopinvader customers to validate</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="domain">[('has_shopinvader_user_to_validate', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No Shopinvader customer to be validated.
+            </p>
+            <p>
+                View all partners that have a Shopinvader user to be validated.
+            </p>
+        </field>
+    </record>
+
+    <menuitem
+        id="menu_sale_shopinvader_customer_to_validate"
+        parent="sale.sale_order_menu"
+        action="action_sale_shopinvader_customer_to_validate"
+        sequence="12"
+    />
 
 </odoo>

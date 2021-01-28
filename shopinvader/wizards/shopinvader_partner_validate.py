@@ -17,10 +17,11 @@ class ShopinvaderPartnerValidate(models.TransientModel):
         default=lambda self: self._default_shopinvader_partner_ids(),
     )
     next_state = fields.Selection(
+        string="Action",
         selection=[
-            ("active", "Active"),
-            ("inactive", "Inactive"),
-            ("pending", "Pending"),
+            ("active", "Activate"),
+            ("inactive", "Inactivate"),
+            ("pending", "Make pending"),
         ],
         default="active",
     )

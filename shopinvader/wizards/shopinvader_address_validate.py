@@ -25,7 +25,11 @@ class ShopinvaderAddressValidate(models.TransientModel):
         default=lambda self: self._default_partner_ids(),
         required=True,
     )
-    is_shopinvader_active = fields.Boolean(default=True)
+    next_state = fields.Selection(
+        string="Action",
+        selection=[("active", "Activate"), ("inactive", "Inactivate")],
+        default="active",
+    )
 
     def _default_backend_ids(self):
         return self.env.context.get("backend_ids") or self.env[
@@ -37,12 +41,13 @@ class ShopinvaderAddressValidate(models.TransientModel):
 
     def action_apply(self):
         self.ensure_one()
+        active = self.next_state == "active"
         # TODO: filter out addresses not belonging to any bound partner?
         records = self.partner_ids.filtered_domain(
-            [("is_shopinvader_active", "!=", self.is_shopinvader_active)]
+            [("is_shopinvader_active", "!=", active)]
         )
-        records.write({"is_shopinvader_active": self.is_shopinvader_active})
-        if self.is_shopinvader_active:
+        records.write({"is_shopinvader_active": active})
+        if active:
             for record in records:
                 record._event("on_shopinvader_validate").notify(
                     record, self.backend_ids

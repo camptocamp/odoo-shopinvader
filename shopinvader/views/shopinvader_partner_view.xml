@@ -41,10 +41,15 @@
                 <field name="name"/>
                 <field name="email"/>
                 <field name="external_id"/>
+                <field name="parent_id"/>
                 <field name="state"/>
+                <filter name="active" string="State: Active" domain="[('state','=','active')]" />
+                <filter name="inactive" string="State: Inactive" domain="[('state','=','inactive')]" />
+                <filter name="pending" string="State: Pending" domain="[('state','=','pending')]" />
                 <group string="Group By">
                     <filter name="group_by_backend_id" string="Backend" domain="[]" context="{'group_by':'backend_id'}"/>
                     <filter name="group_by_state" string="State" domain="[]" context="{'group_by':'state'}"/>
+                    <filter name="group_by_parent" string="Parent" domain="[]" context="{'group_by':'parent_id'}"/>
                 </group>
             </search>
         </field>

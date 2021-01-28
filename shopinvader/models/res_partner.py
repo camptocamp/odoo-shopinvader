@@ -17,6 +17,14 @@ class ResPartner(models.Model):
     shopinvader_bind_ids = fields.One2many(
         "shopinvader.partner", "record_id", string="Shopinvader Binding"
     )
+    # TODO: this field should be renamed to `shopinvader_type`
+    # and should be valued like:
+    # - profile = main account
+    # - address = just an address
+    #   that belongs to a partner with shopinvader_type == 'profile'
+    # - user or childuser = has a shop user and is child of a profile
+    # This way we can get rid of many computations like
+    # `parent_has_shopinvader_user` or `has_shopinvader_user`
     address_type = fields.Selection(
         selection=[("profile", "Profile"), ("address", "Address")],
         string="Shopinvader Address Type",
@@ -31,6 +39,12 @@ class ResPartner(models.Model):
         string="Shop enabled",
         help="This address is enabled to be used for Shopinvader.",
     )
+    parent_has_shopinvader_user = fields.Boolean(
+        help="This partner belongs to Shopinvader user.",
+        compute="_compute_parent_has_shopinvader_user",
+        compute_sudo=True,
+        store=True,
+    )
     has_shopinvader_user = fields.Boolean(
         help="This partner has at least a Shopinvader user.",
         compute="_compute_has_shopinvader_user",
@@ -40,12 +54,13 @@ class ResPartner(models.Model):
         help="This partner has at least a Shopinvader active user.",
         compute="_compute_has_shopinvader_user",
         compute_sudo=True,
+        store=True,
     )
     has_shopinvader_user_to_validate = fields.Boolean(
         help="This partner has at least a Shopinvader user to be validated.",
         compute="_compute_has_shopinvader_user",
-        store=True,
         compute_sudo=True,
+        store=True,
     )
 
     @api.depends("is_blacklisted")
@@ -60,6 +75,13 @@ class ResPartner(models.Model):
                 blacklist_model._remove(record.email)
             else:
                 blacklist_model._add(record.email)
+
+    @api.depends("parent_id.shopinvader_bind_ids")
+    def _compute_parent_has_shopinvader_user(self):
+        for record in self:
+            record.parent_has_shopinvader_user = bool(
+                record.parent_id.shopinvader_bind_ids
+            )
 
     @api.depends("shopinvader_bind_ids.state")
     def _compute_has_shopinvader_user(self):
@@ -150,7 +172,7 @@ class ResPartner(models.Model):
     def action_shopinvader_validate_address(self):
         wiz = self._get_shopinvader_validate_address_wizard()
         action = self.env.ref(
-            "shopinvader.shopinvader_partner_validate_act_window"
+            "shopinvader.shopinvader_address_validate_act_window"
         )
         action_data = action.read()[0]
         action_data["res_id"] = wiz.id

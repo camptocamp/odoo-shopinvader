@@ -11,16 +11,19 @@
                   Validate Shopinvader addresses.
                   Selected addresses not matching this status will be updated.
                 </div>
-                <group>
-                  <field name="backend_ids" />
-                  <field name="is_shopinvader_active" />
+                <group name="actions">
+                    <separator string="Shopinvader backends not notify" />
+                    <field name="backend_ids" nolabel="1" colspan="4" />
+                    <field name="next_state" colspan="4"/>
                 </group>
-                <group>
+                <group name="selected">
                     <field name="partner_ids" colspan="4" nolabel="1">
                         <tree create="false" delete="false">
+                            <field name="parent_id"/>
                             <field name="name"/>
                             <field name="email"/>
                             <field name="type"/>
+                            <field name="is_shopinvader_active"/>
                         </tree>
                     </field>
                 </group>
@@ -40,6 +43,7 @@
         <field name="target">new</field>
         <field name="view_id" ref="shopinvader_address_validate_form_view"/>
         <field name="groups_id" eval="[(4, ref('shopinvader.group_shopinvader_manager'))]"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
     </record>
 
 </odoo>

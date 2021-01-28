@@ -31,13 +31,14 @@
                 <field name="address_type" invisible="1" />
                 <field name="has_shopinvader_user" invisible="1" />
                 <field name="has_shopinvader_user_to_validate" invisible="1" />
+                <field name="is_shopinvader_active" invisible="1" />
                 <div t-if="record.has_shopinvader_user_to_validate.raw_value" class="float-right">
-                    <a class="btn btn-sm btn-warning" name="action_shopinvader_validate" type="object" title="There's at least one Shopinvader user to validate">
+                    <a class="btn btn-sm btn-warning" name="action_shopinvader_validate_customer" type="object" title="There's at least one Shopinvader user to validate">
                         <i class="fa fa-check" aria-hidden="true"></i> Shop: validate user
                     </a>
                 </div>
                 <div t-if="!record.has_shopinvader_user.raw_value and record.address_type.raw_value=='address' and !record.is_shopinvader_active.raw_value" class="float-right">
-                    <a class="btn btn-sm btn-warning"  name="action_shopinvader_address_validate" type="object" title="There's at least one address to validate">
+                    <a class="btn btn-sm btn-warning"  name="action_shopinvader_validate_address" type="object" title="There's at least one address to validate">
                         <i class="fa fa-check" aria-hidden="true"></i> Shop: validate address
                     </a>
                 </div>
@@ -45,27 +46,26 @@
         </field>
     </record>
 
-    <record id="action_sale_shopinvader_customer_to_validate" model="ir.actions.act_window">
-        <field name="name">Shopinvader customers to validate</field>
-        <field name="res_model">res.partner</field>
-        <field name="view_mode">form</field>
-        <field name="target">new</field>
-        <field name="domain">[('has_shopinvader_user_to_validate', '=', True)]</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                No Shopinvader customer to be validated.
-            </p>
-            <p>
-                View all partners that have a Shopinvader user to be validated.
-            </p>
+    <record id="view_res_partner_filter" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <filter name="inactive" position="after">
+                <separator/>
+                <filter
+                    string="Shopinvader: address to validate"
+                    name="shopinvader_address_to_validate"
+                    domain="[('parent_has_shopinvader_user','=', True), ('has_shopinvader_user','=', False),('is_shopinvader_active','=',False),('address_type','=','address')]"/>
+                <filter
+                    string="Shopinvader: active user"
+                    name="shopinvader_active_user"
+                    domain="[('has_shopinvader_user_active', '=', True)]"/>
+                <filter
+                    string="Shopinvader: user to validate"
+                    name="shopinvader_user_to_validate"
+                    domain="[('has_shopinvader_user_to_validate', '=', True)]"/>
+            </filter>
         </field>
     </record>
-
-    <menuitem
-        id="menu_sale_shopinvader_customer_to_validate"
-        parent="sale.sale_order_menu"
-        action="action_sale_shopinvader_customer_to_validate"
-        sequence="12"
-    />
 
 </odoo>

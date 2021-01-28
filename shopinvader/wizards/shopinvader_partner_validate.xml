@@ -39,6 +39,7 @@
         <field name="target">new</field>
         <field name="view_id" ref="shopinvader_partner_validate_form_view"/>
         <field name="groups_id" eval="[(4, ref('shopinvader.group_shopinvader_manager'))]"/>
+        <field name="binding_model_id" ref="shopinvader.model_shopinvader_partner"/>
     </record>
 
 </odoo>

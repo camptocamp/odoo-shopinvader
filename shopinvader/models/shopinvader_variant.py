@@ -244,7 +244,9 @@ class ShopinvaderVariant(models.Model):
 
     def _compute_main_product(self):
         # Respect same order.
-        order_by = self.env["product.product"]._order.split(",")
+        order_by = [
+            x.strip() for x in self.env["product.product"]._order.split(",")
+        ]
         fields_to_read = ["tmpl_record_id"] + order_by
         tmpl_ids = self.mapped("tmpl_record_id").ids
         # Use sudo to bypass permissions (we don't care)

@@ -9,3 +9,5 @@ openupgradelib @ git+https://github.com/OCA/openupgradelib.git
 
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+odoo13-addon-base_jsonify @ git+https://github.com/OCA/server-tools.git@refs/pull/2012/head#subdirectory=setup/base_jsonify

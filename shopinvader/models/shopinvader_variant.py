@@ -2,6 +2,7 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from contextlib import contextmanager
+from itertools import groupby
 
 from odoo import api, fields, models
 from odoo.tools import float_compare, float_round
@@ -17,15 +18,22 @@ class ShopinvaderVariant(models.Model):
         "product.product": "record_id",
     }
 
-    default_code = fields.Char(related="record_id.default_code")
+    default_code = fields.Char(related="record_id.default_code", store=True)
     shopinvader_product_id = fields.Many2one(
         "shopinvader.product", required=True, ondelete="cascade", index=True
     )
-    record_id = fields.Many2one(
-        "product.product", required=True, ondelete="cascade", index=True
+    tmpl_record_id = fields.Many2one(
+        string="Product template",
+        related="shopinvader_product_id.record_id",
+        store=True,
+        index=True,
     )
-    object_id = fields.Integer(
-        compute="_compute_object_id", store=True, index=True
+    record_id = fields.Many2one(
+        string="Product",
+        comodel_name="product.product",
+        required=True,
+        ondelete="cascade",
+        index=True,
     )
     variant_count = fields.Integer(
         related="product_variant_count", string="Shopinvader Variant Count"
@@ -157,11 +165,6 @@ class ShopinvaderVariant(models.Model):
             )
         return res
 
-    @api.depends("record_id")
-    def _compute_object_id(self):
-        for record in self:
-            record.object_id = record.record_id.id
-
     def _compute_redirect_url_key(self):
         for record in self:
             res = []
@@ -240,14 +243,39 @@ class ShopinvaderVariant(models.Model):
         return res
 
     def _compute_main_product(self):
+        # Respect same order.
+        order_by = [
+            x.strip() for x in self.env["product.product"]._order.split(",")
+        ]
+        fields_to_read = ["tmpl_record_id"] + order_by
+        tmpl_ids = self.mapped("tmpl_record_id").ids
+        # Use sudo to bypass permissions (we don't care)
+        _variants = self.sudo().search(
+            [("tmpl_record_id", "in", tmpl_ids)], order="tmpl_record_id"
+        )
+        # Use `load=False` to not load template name
+        variants = _variants.read(fields_to_read, load=False)
+        var_by_tmpl = groupby(variants, lambda x: x["tmpl_record_id"])
+
+        def pick_1st_variant(prods):
+            # NOTE: if the order is changed by adding `asc/desc` this can be broken
+            # but it's very unlikely that the default order for product.product
+            # will be changed.
+            return (
+                fields.first(
+                    sorted(prods, key=lambda var: [var[x] for x in order_by])
+                )
+                or {}
+            )
+
+        main_by_tmpl = {
+            tmpl: pick_1st_variant(prods).get("id")
+            for tmpl, prods in var_by_tmpl
+        }
         for record in self:
-            if (
-                record.record_id
-                == record.product_tmpl_id.product_variant_ids[0]
-            ):
-                record.main = True
-            else:
-                record.main = False
+            record.main = (
+                main_by_tmpl.get(record.tmpl_record_id.id) == record.id
+            )
 
     def get_shop_data(self):
         """Return product data for the shop."""

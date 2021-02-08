@@ -5,7 +5,7 @@
 from functools import wraps
 
 from odoo import _, exceptions
-from odoo.addons.base_rest.components.service import to_int
+from odoo.addons.base_rest.components.service import to_bool, to_int
 from odoo.addons.component.core import Component
 from odoo.addons.shopinvader.models.shopinvader_partner import ALL_STATES
 from odoo.osv import expression
@@ -109,7 +109,11 @@ class UsersService(Component):
         return {
             "name": {"type": "string", "required": True},
             "email": {"type": "string", "required": True},
-            "can_manage_users": {"type": "boolean", "nullable": True},
+            "can_manage_users": {
+                "type": "boolean",
+                "coerce": to_bool,
+                "nullable": True,
+            },
             "parent_id": {
                 "type": "integer",
                 "coerce": to_int,

@@ -317,7 +317,7 @@ class WishlistService(Component):
             "default_code:sku",
             "url_key",
             "price",
-            "object_id:objectID",
+            ("record_id:objectID", lambda rec, fname: rec[fname].id),
         ]
         if "images" in self.env["shopinvader.variant"]._fields:
             # avoid hard dependency on shopinvader_image

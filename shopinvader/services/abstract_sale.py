@@ -18,7 +18,7 @@ class AbstractSaleService(AbstractComponent):
             "full_name:name",
             "short_name",
             ("shopinvader_product_id:model", ("name",)),
-            "object_id:id",
+            "record_id:id",
             "url_key",
             "default_code:sku",
         ]

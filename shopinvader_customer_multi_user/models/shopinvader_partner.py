@@ -55,7 +55,6 @@ class ShopinvaderPartner(models.Model):
     def _compute_main_partner_id(self):
         for rec in self:
             rec.main_partner_id = rec._get_main_partner()
-            rec.is_main_account = rec.record_id == rec.main_partner_id
 
     @api.depends("main_partner_id")
     def _compute_is_main_account(self):

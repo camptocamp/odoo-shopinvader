@@ -42,7 +42,6 @@ class ShopinvaderAddressValidate(models.TransientModel):
     def action_apply(self):
         self.ensure_one()
         active = self.next_state == "active"
-        # TODO: filter out addresses not belonging to any bound partner?
         records = self.partner_ids.filtered_domain(
             [("is_shopinvader_active", "!=", active)]
         )

@@ -161,3 +161,22 @@ class TestCustomer(TestCustomerCommon):
         invader_partner._get_shopinvader_validate_wizard().action_apply()
         self.assertTrue(invader_partner.is_shopinvader_active)
         self.assertFalse(partner.has_shopinvader_user_to_validate)
+
+    def test_has_address_to_validate(self):
+        invader_partner = self._create_invader_partner(
+            self.env, name="Just A User", email="just@auser.com",
+        )
+        self.assertTrue(invader_partner.is_shopinvader_active)
+        partner = invader_partner.record_id
+        self.assertTrue(partner.has_shopinvader_user)
+        self.assertFalse(partner.has_shopinvader_user_to_validate)
+        self.assertFalse(partner.has_shopinvader_address_to_validate)
+        addr1 = partner.create(
+            {
+                "address_type": "address",
+                "parent_id": partner.id,
+                "name": "Just a contact",
+            }
+        )
+        self.assertFalse(addr1.is_shopinvader_active)
+        self.assertTrue(partner.has_shopinvader_address_to_validate)

@@ -33,6 +33,7 @@
 
     <record model="ir.actions.act_window" id="shopinvader_partner_validate_act_window">
         <field name="name">Shopinvader Partner validate Wizard</field>
+        <field name="type">ir.actions.act_window</field>
         <field name="res_model">shopinvader.partner.validate</field>
         <field name="view_mode">form</field>
         <field name="context">{}</field>

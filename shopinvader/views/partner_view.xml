@@ -101,7 +101,7 @@
                 <filter
                     string="Shopinvader: address to validate"
                     name="shopinvader_address_to_validate"
-                    domain="[('parent_has_shopinvader_user','=', True), ('has_shopinvader_user','=', False),('is_shopinvader_active','=',False),('address_type','=','address')]"/>
+                    domain="[('parent_has_shopinvader_user','=', True), ('has_shopinvader_user_active','=', False),('is_shopinvader_active','=',False),('address_type','=','address')]"/>
                 <filter
                     string="Shopinvader: active user"
                     name="shopinvader_active_user"

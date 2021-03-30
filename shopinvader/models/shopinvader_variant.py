@@ -6,7 +6,7 @@
 from contextlib import contextmanager
 from itertools import groupby
 
-from odoo import api, fields, models
+from odoo import _, api, exceptions, fields, models
 from odoo.tools import float_compare, float_round
 
 from .tools import sanitize_attr_name
@@ -263,7 +263,20 @@ class ShopinvaderVariant(models.Model):
             # NOTE: if the order is changed by adding `asc/desc` this can be broken
             # but it's very unlikely that the default order for product.product
             # will be changed.
-            ordered = sorted(prods, key=lambda var: [var[x] for x in order_by])
+            try:
+                ordered = sorted(
+                    prods, key=lambda var: [var[x] for x in order_by]
+                )
+            except TypeError as orig_exception:
+                # TypeError: '<' not supported between instances of 'bool' and 'str'
+                # It means we don't have all values to determine this value.
+                raise exceptions.UserError(
+                    _(
+                        "Cannot determine main variant for template ID: %s."
+                        "\nAt least one variant misses one of these values: %s."
+                    )
+                    % (tuple(prods)[0]["tmpl_record_id"], ", ".join(order_by))
+                ) from orig_exception
             return ordered[0].get("id") if ordered else None
 
         main_by_tmpl = {

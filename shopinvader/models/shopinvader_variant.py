@@ -6,7 +6,8 @@
 from contextlib import contextmanager
 from itertools import groupby
 
-from odoo import _, api, exceptions, fields, models
+from odoo import _, api, fields, models
+from odoo.addons.queue_job.exception import RetryableJobError
 from odoo.tools import float_compare, float_round
 
 from .tools import sanitize_attr_name
@@ -270,17 +271,19 @@ class ShopinvaderVariant(models.Model):
             except TypeError as orig_exception:
                 # TypeError: '<' not supported between instances of 'bool' and 'str'
                 # It means we don't have all values to determine this value.
-                raise exceptions.UserError(
-                    _(
-                        "Cannot determine main variant for template ID: %s."
-                        "\nAt least one variant misses one of these values: %s."
-                    )
-                    % (tuple(prods)[0]["tmpl_record_id"], ", ".join(order_by))
-                ) from orig_exception
+                msg = _(
+                    "Cannot determine main variant for template ID: %s."
+                    "\nAt least one variant misses one of these values: %s."
+                    "\nWill try again later till 'max retries' count is reached."
+                ) % (prods[0]["tmpl_record_id"], ", ".join(order_by))
+                # This issue might depend on incomplete state of product info.
+                # Eg: missing translation for variant matching current lang.
+                # Let's retry later a bunch of times (5 by default).
+                raise RetryableJobError(msg) from orig_exception
             return ordered[0].get("id") if ordered else None
 
         main_by_tmpl = {
-            tmpl: pick_1st_variant(prods) for tmpl, prods in var_by_tmpl
+            tmpl: pick_1st_variant(tuple(prods)) for tmpl, prods in var_by_tmpl
         }
         for record in self:
             record.main = (

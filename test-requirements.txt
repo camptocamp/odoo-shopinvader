@@ -18,3 +18,4 @@ odoo14-addon-shopinvader_search_engine @ git+https://github.com/akretion/odoo-sh
 odoo14-addon-shopinvader_locomotive @ git+https://github.com/akretion/odoo-shopinvader.git@14.0-mig-locomotive#subdirectory=setup/shopinvader_locomotive
 odoo14-addon-sale_wishlist @ git+https://github.com/trobz/sale-workflow.git@14.0-mig-sale_wishlist#subdirectory=setup/sale_wishlist
 odoo14-addon-shopinvader_wishlist @ git+https://github.com/akretion/odoo-shopinvader.git@14.0-mig-shopinvader_wishlist#subdirectory=setup/shopinvader_wishlist
+odoo14-addon-email_template_qweb @ git+https://github.com/phuctranerp/social.git@14.0-mig-email_template_qweb#subdirectory=setup/email_template_qweb

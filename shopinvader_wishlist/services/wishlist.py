@@ -337,6 +337,7 @@ class WishlistService(Component):
         return [
             "id",
             "name",
+            ("partner_id:access", self._json_parser_wishlist_access),
         ]
 
     def _json_parser(self):

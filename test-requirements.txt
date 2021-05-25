@@ -9,3 +9,14 @@ unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
 
 odoo14-addon-connector_search_engine @ git+https://github.com/OCA/search-engine@refs/pull/87/head#subdirectory=setup/connector_search_engine
+# [14.0] shopinvader_search_engine: support lang agnostic indexes #968
+# https://github.com/shopinvader/odoo-shopinvader/pull/968
+odoo14-addon-shopinvader-search-engine @ git+https://github.com/shopinvader/odoo-shopinvader@refs/pull/968/head#subdirectory=setup/shopinvader_search_engine
+
+# [14.0] Add product_seasonality #855
+# https://github.com/OCA/product-attribute/pull/855
+odoo14-addon-product_seasonality @ git+https://github.com/OCA/product-attribute@refs/pull/855/head#subdirectory=setup/product_seasonality
+
+# [14.0] Add sale_product_seasonality #1594
+# https://github.com/OCA/product-attribute/pull/1594
+odoo14-addon-sale_product_seasonality @ git+https://github.com/OCA/sale-workflow@refs/pull/1594/head#subdirectory=setup/sale_product_seasonality

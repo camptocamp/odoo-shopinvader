@@ -7,3 +7,5 @@ vcrpy
 vcrpy-unittest
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+odoo14-addon-connector_search_engine @ git+https://github.com/OCA/search-engine@refs/pull/87/head#subdirectory=setup/connector_search_engine

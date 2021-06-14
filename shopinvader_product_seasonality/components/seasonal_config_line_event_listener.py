@@ -21,3 +21,5 @@ class SeasonalConfigLineEventListener(Component):
         if config_lines:
             s_config_model = self.env["shopinvader.seasonal.config.line"]
             s_config_model.with_delay().create_bindings_from_lines(config_lines)
+
+    # TODO: decide what to do when lines gets updated

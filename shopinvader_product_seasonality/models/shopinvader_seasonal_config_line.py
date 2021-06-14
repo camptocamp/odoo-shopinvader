@@ -22,6 +22,8 @@ class ShopinvaderSeasonalConfigLine(models.Model):
         compute="_compute_weekdays",
         help="List of weekdays numbers (zero-based)",
     )
+    # TODO: decide what to do w/ this
+    active = fields.Boolean()
 
     def _compute_weekdays_depends(self):
         return (

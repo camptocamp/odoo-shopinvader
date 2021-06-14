@@ -20,6 +20,8 @@
         "data/queue_job_function_data.xml",
         "security/ir.model.access.csv",
         "views/seasonal_config_line.xml",
+        "views/shopinvader_backend.xml",
+        "views/shopinvader_seasonal_config.xml",
     ],
     "installable": True,
 }

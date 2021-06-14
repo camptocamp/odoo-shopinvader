@@ -110,3 +110,22 @@ class TestProductSeasonalityCase(CommonCaseWithLines, UtilsMixin):
             }
         )
         self.assertEqual(len(line.shopinvader_bind_ids), 1)
+
+    def test_bind_all_existing(self):
+        line = self.config_line_model.with_context(test_queue_job_no_delay=True).create(
+            {
+                "date_start": "2021-05-12",
+                "date_end": "2021-05-23",
+                "saturday": False,
+                "sunday": False,
+                "product_id": self.prod2.id,
+                "seasonal_config_id": self.line2.seasonal_config_id.id,
+            }
+        )
+        # no bound product, no binding
+        self.assertEqual(len(line.shopinvader_bind_ids), 0)
+        self.backend.bind_all_seasonal_config_lines()
+        self.assertEqual(len(line.shopinvader_bind_ids), 0)
+        self._bind_products(self.prod2, backend=self.backend)
+        self.backend.bind_all_seasonal_config_lines()
+        self.assertEqual(len(line.shopinvader_bind_ids), 1)

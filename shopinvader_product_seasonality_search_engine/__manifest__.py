@@ -14,5 +14,8 @@
         "shopinvader_product_seasonality",
         "shopinvader_search_engine",
     ],
+    "data": [
+        "views/shopinvader_seasonal_config.xml",
+    ],
     "installable": True,
 }

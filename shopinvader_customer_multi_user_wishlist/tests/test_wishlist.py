@@ -3,7 +3,9 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import mock
+
 from odoo import exceptions
+
 from odoo.addons.shopinvader_wishlist.tests.test_wishlist import (
     CommonWishlistCase,
 )
@@ -68,3 +70,19 @@ class WishlistCase(CommonWishlistCase):
             # make it work properly
             self.wishlist_service.add_to_cart(self.prod_set.id)
             self.assertEqual(cart.order_line[0].product_id, prod)
+
+    def test_access_owner(self):
+        self.wishlist_service._load_partner_work_context(
+            self.company_binding, force=True
+        )
+        res = self.wishlist_service._to_json_one(self.prod_set)
+        self.assertEqual(
+            res["access"], {"read": True, "update": True, "delete": True}
+        )
+
+    def test_access_not_owner(self):
+        self.wishlist_service._load_partner_work_context(self.user_binding)
+        res = self.wishlist_service._to_json_one(self.prod_set)
+        self.assertEqual(
+            res["access"], {"read": True, "update": False, "delete": False}
+        )

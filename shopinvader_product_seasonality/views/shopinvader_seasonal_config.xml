@@ -70,7 +70,7 @@
     </record>
 
     <record model="ir.ui.menu" id="shopinvader_seasonal_config_menu">
-        <field name="name">Seaonal config lines</field>
+        <field name="name">Seasonal config lines</field>
         <field name="parent_id" ref="shopinvader.menu_shopinvader_root" />
         <field name="action" ref="shopinvader_seasonal_config_act_window" />
         <field name="sequence" eval="50" />

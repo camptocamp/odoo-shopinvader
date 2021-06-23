@@ -6,6 +6,7 @@
         <field name="model">shopinvader.seasonal.config.line</field>
         <field name="arch" type="xml">
             <search string="Lines">
+                <field name="product_template_id" />
                 <field name="product_id" />
                 <field name="backend_id" string="Shopinvader Backend" />
                 <field name="record_id" />
@@ -35,7 +36,8 @@
         <field name="arch" type="xml">
             <tree string="Lines" create="0">
                 <field name="backend_id" />
-                <field name="display_name" />
+                <field name="record_id" />
+                <field name="product_template_id" />
                 <field name="product_id" />
             </tree>
         </field>
@@ -48,7 +50,8 @@
             <form>
                 <sheet>
                     <group name="config_line">
-                        <field name="display_name" />
+                        <field name="record_id" />
+                        <field name="product_template_id" />
                         <field name="product_id" />
                         <field name="seasonal_config_id" />
                     </group>
@@ -62,7 +65,7 @@
         <field name="res_model">shopinvader.seasonal.config.line</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[]</field>
-         <field name="context">{}</field>
+        <field name="context">{}</field>
         <field
             name="groups_id"
             eval="[(4, ref('shopinvader.group_shopinvader_manager'))]"

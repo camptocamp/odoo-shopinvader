@@ -105,6 +105,7 @@ class TestProductSeasonalityCase(CommonCaseWithLines, UtilsMixin):
                 "date_end": "2021-05-23",
                 "saturday": False,
                 "sunday": False,
+                "product_template_id": self.prod2.product_tmpl_id.id,
                 "product_id": self.prod2.id,
                 "seasonal_config_id": self.line2.seasonal_config_id.id,
             }
@@ -118,6 +119,7 @@ class TestProductSeasonalityCase(CommonCaseWithLines, UtilsMixin):
                 "date_end": "2021-05-23",
                 "saturday": False,
                 "sunday": False,
+                "product_template_id": self.prod2.product_tmpl_id.id,
                 "product_id": self.prod2.id,
                 "seasonal_config_id": self.line2.seasonal_config_id.id,
             }

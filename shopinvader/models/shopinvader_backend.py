@@ -361,7 +361,12 @@ class ShopinvaderBackend(models.Model):
             }
             if lang:
                 values["lang_id"] = lang.id
-            binding = bindings.with_context(map_children=True).create(values)
+            values_handler = getattr(
+                bindings, "_binding_create_values_get", lambda vals: vals
+            )
+            binding = bindings.with_context(map_children=True).create(
+                values_handler(values)
+            )
         elif not binding.active:
             binding.write({"active": True})
         return binding

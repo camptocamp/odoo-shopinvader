@@ -7,7 +7,6 @@
         <field name="arch" type="xml">
             <search string="Lines">
                 <field name="product_template_id" />
-                <field name="product_id" />
                 <field name="backend_id" string="Shopinvader Backend" />
                 <field name="record_id" />
                 <field name="seasonal_config_id" />
@@ -38,7 +37,6 @@
                 <field name="backend_id" />
                 <field name="record_id" />
                 <field name="product_template_id" />
-                <field name="product_id" />
             </tree>
         </field>
     </record>
@@ -52,7 +50,6 @@
                     <group name="config_line">
                         <field name="record_id" />
                         <field name="product_template_id" />
-                        <field name="product_id" />
                         <field name="seasonal_config_id" />
                     </group>
                 </sheet>

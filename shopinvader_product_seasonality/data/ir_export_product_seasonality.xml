@@ -26,9 +26,7 @@
   </record>
 
   <record id="ir_exp_seasonal_config_line_product" model="ir.exports.line">
-    <field name="name">product_id</field>
-    <field name="target">product_id</field>
-    <field name="instance_method_name">_jsonify_m2o_to_id</field>
+    <field name="name">product_ids</field>
     <field name="export_id" ref="ir_exp_seasonal_config_line" />
   </record>
 

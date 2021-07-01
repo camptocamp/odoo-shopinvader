@@ -33,7 +33,7 @@
             ref="shopinvader_product_seasonality.shopinvader_seasonal_config_tree_view"
         />
         <field name="arch" type="xml">
-            <field name="variant_id" position="after">
+            <field name="product_template_id" position="after">
                 <field name="sync_state" />
             </field>
         </field>

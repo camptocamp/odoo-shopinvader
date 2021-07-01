@@ -2,6 +2,8 @@
 # @author Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from collections import defaultdict
+
 from odoo import api, fields, models
 
 from odoo.addons.base_sparse_field.models.fields import Serialized
@@ -14,9 +16,16 @@ class ShopinvaderSeasonalConfigLine(models.Model):
     _description = "Shopinvader Seasonal Config Binding"
 
     record_id = fields.Many2one(
-        "seasonal.config.line", required=True, ondelete="cascade", index=True
+        comodel_name="seasonal.config.line",
+        required=True,
+        ondelete="cascade",
+        index=True,
     )
     display_name = fields.Char(related="record_id.display_name")
+    product_ids = Serialized(
+        default=[],
+        compute="_compute_product_ids",
+    )
     weekdays = Serialized(
         default=[],
         compute="_compute_weekdays",
@@ -24,6 +33,14 @@ class ShopinvaderSeasonalConfigLine(models.Model):
     )
     # TODO: decide what to do w/ this
     active = fields.Boolean()
+
+    def _compute_product_ids(self):
+        for rec in self:
+            rec.product_ids = (
+                # Either specific proudct ID or all variants for the template
+                rec.product_id.ids
+                or rec.product_template_id.product_variant_ids.ids
+            )
 
     def _compute_weekdays_depends(self):
         return (
@@ -70,21 +87,32 @@ class ShopinvaderSeasonalConfigLine(models.Model):
 
     def create_bindings_from_lines(self, config_lines):
         to_create = []
-        all_backends = config_lines.shopinvader_bind_ids.backend_id
-        for backend in all_backends:
+        by_backend = defaultdict(config_lines.browse)
+        for line in config_lines:
+            backends = (
+                line.product_id.shopinvader_bind_ids.backend_id
+                or line.product_template_id.shopinvader_bind_ids.backend_id
+            )
+            for backend_id in set(backends.ids):
+                by_backend[backend_id] += line
+
+        for backend_id, lines in by_backend.items():
             existing = self.search(
                 [
-                    ("record_id", "in", config_lines.ids),
-                    ("backend_id", "=", backend.id),
+                    ("record_id", "in", lines.ids),
+                    ("backend_id", "=", backend_id),
                 ]
             )
-            missing = config_lines - existing.record_id
+            missing = lines - existing.record_id
             for line in missing:
-                to_create.append(self._prepare_config_line_values(backend, line))
-        return self.create(to_create)
+                to_create.append(self._prepare_config_line_values(backend_id, line))
 
-    def _prepare_config_line_values(self, backend, line):
+        if to_create:
+            return self.create(to_create)
+        return self.browse()
+
+    def _prepare_config_line_values(self, backend_id, line):
         return {
-            "backend_id": backend.id,
+            "backend_id": backend_id,
             "record_id": line.id,
         }

@@ -19,6 +19,7 @@ from odoo.addons.shopinvader.tests.common import UtilsMixin
 #         "friday": False,
 #         "saturday": False,
 #         "sunday": False,
+#         "product_template_id": cls.prod1.product_tmpl_id.id,
 #         "product_id": cls.prod1.id,
 #     },
 #     {
@@ -31,6 +32,7 @@ from odoo.addons.shopinvader.tests.common import UtilsMixin
 #         "friday": True,
 #         "saturday": True,
 #         "sunday": True,
+#         "product_template_id": cls.prod2.product_tmpl_id.id,
 #         "product_id": cls.prod2.id,
 #     },
 # ]
@@ -83,7 +85,7 @@ class TestProductSeasonalityCase(
         expected = {
             "objectID": self.line1.id,
             "config_id": self.line1.seasonal_config_id.id,
-            "product_id": self.line1.product_id.id,
+            "product_ids": list(self.line1.product_template_id.product_variant_ids.ids),
             "date_start": "2021-05-10T02:00:00+02:00",
             "date_end": "2021-05-16T02:00:00+02:00",
             "weekdays": [0, 1, 2],
@@ -95,7 +97,7 @@ class TestProductSeasonalityCase(
         expected = {
             "objectID": self.line2.id,
             "config_id": self.line2.seasonal_config_id.id,
-            "product_id": self.line2.product_id.id,
+            "product_ids": list(self.line2.product_template_id.product_variant_ids.ids),
             "date_start": "2021-05-12T02:00:00+02:00",
             "date_end": "2021-05-23T02:00:00+02:00",
             "weekdays": [3, 4, 5, 6],
@@ -117,6 +119,28 @@ class TestProductSeasonalityCase(
             }
         )
         self.assertEqual(len(line.shopinvader_bind_ids), 1)
+        self.assertEqual(line.shopinvader_bind_ids[0].product_ids, [self.prod2.id])
+
+    def test_auto_create_binding_from_template(self):
+        self._bind_products(self.prod2, backend=self.backend)
+        line = self.config_line_model.with_context(test_queue_job_no_delay=True).create(
+            {
+                "date_start": "2021-05-12",
+                "date_end": "2021-05-23",
+                "saturday": False,
+                "sunday": False,
+                "product_template_id": self.prod2.product_tmpl_id.id,
+                "seasonal_config_id": self.line2.seasonal_config_id.id,
+            }
+        )
+        all_variants = self.prod2.product_tmpl_id.product_variant_ids
+        # We must have 1 binding per each variant
+        self.assertTrue(len(all_variants) > 1)
+        self.assertEqual(len(line.shopinvader_bind_ids), 1)
+        self.assertEqual(
+            sorted(line.shopinvader_bind_ids[0].product_ids),
+            sorted(all_variants.ids),
+        )
 
     def test_bind_all_existing(self):
         line = self.config_line_model.with_context(test_queue_job_no_delay=True).create(

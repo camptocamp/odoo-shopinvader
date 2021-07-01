@@ -19,13 +19,15 @@ class TestProductSeasonalityCase(BackendCaseBase):
         cls.backend._add_missing_indexes()
 
     def _create_line(self, **kw):
+        prod = self.env.ref("product.product_product_2")
         vals = {
             "seasonal_config_id": self.seasonal_conf.id,
             "date_start": "2021-05-10",
             "date_end": "2021-05-16",
             "monday": True,
             "tuesday": True,
-            "product_id": self.env.ref("product.product_product_2").id,
+            "product_template_id": prod.product_tmpl_id.id,
+            "product_id": prod.id,
             "backend_id": self.backend.id,
         }
         vals.update(kw)
@@ -56,8 +58,8 @@ class TestProductSeasonalityCase(BackendCaseBase):
             "date_end": "2021-05-16T02:00:00+02:00",
             "date_start": "2021-05-10T02:00:00+02:00",
             "id": s_line.id,
-            "objectID": s_line.record_id.id,
-            "product_id": s_line.product_id.id,
+            "objectID": s_line.id,
+            "product_ids": [s_line.product_id.id],
             "weekdays": [2, 3, 4, 5, 6],
         }
         self.assertEqual(s_line.get_shop_data(), expected)

@@ -47,12 +47,14 @@ class TestProductSeasonalityCase(CommonCaseWithLines, UtilsMixin):
         cls.s_line1 = cls.s_config_line_model.create(
             {
                 "record_id": cls.line1.id,
+                "variant_id": cls.line1.product_id.id,
                 "backend_id": cls.backend.id,
             }
         )
         cls.s_line2 = cls.s_config_line_model.create(
             {
                 "record_id": cls.line2.id,
+                "variant_id": cls.line1.product_id.id,
                 "backend_id": cls.backend.id,
             }
         )
@@ -111,6 +113,22 @@ class TestProductSeasonalityCase(CommonCaseWithLines, UtilsMixin):
             }
         )
         self.assertEqual(len(line.shopinvader_bind_ids), 1)
+
+    def test_auto_create_binding_from_template(self):
+        self._bind_products(self.prod2, backend=self.backend)
+        line = self.config_line_model.with_context(test_queue_job_no_delay=True).create(
+            {
+                "date_start": "2021-05-12",
+                "date_end": "2021-05-23",
+                "saturday": False,
+                "sunday": False,
+                "product_template_id": self.prod2.product_tmpl_id.id,
+                "seasonal_config_id": self.line2.seasonal_config_id.id,
+            }
+        )
+        all_variants = self.prod2.product_tmpl_id.product_variant_ids
+        self.assertTrue(len(all_variants) > 1)
+        self.assertEqual(len(line.shopinvader_bind_ids), len(all_variants))
 
     def test_bind_all_existing(self):
         line = self.config_line_model.with_context(test_queue_job_no_delay=True).create(

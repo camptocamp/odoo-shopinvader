@@ -2,6 +2,8 @@
 # @author Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from collections import defaultdict
+
 from odoo import api, fields, models
 
 from odoo.addons.base_sparse_field.models.fields import Serialized
@@ -14,7 +16,23 @@ class ShopinvaderSeasonalConfigLine(models.Model):
     _description = "Shopinvader Seasonal Config Binding"
 
     record_id = fields.Many2one(
-        "seasonal.config.line", required=True, ondelete="cascade", index=True
+        comodel_name="seasonal.config.line",
+        required=True,
+        ondelete="cascade",
+        index=True,
+    )
+    # Each config line can be related to a template only or to a variant too.
+    # When the relation is on the template,
+    # it means that the rule applies to all variants.
+    # When this happens, we create 1 binding per each variant.
+    variant_id = fields.Many2one(
+        comodel_name="product.product",
+        required=True,
+        ondelete="cascade",
+        index=True,
+        compute="_compute_variant_id",
+        readonly=False,
+        store=True,
     )
     display_name = fields.Char(related="record_id.display_name")
     weekdays = Serialized(
@@ -24,6 +42,12 @@ class ShopinvaderSeasonalConfigLine(models.Model):
     )
     # TODO: decide what to do w/ this
     active = fields.Boolean()
+
+    @api.depends("record_id.product_id")
+    def _compute_variant_id(self):
+        for rec in self:
+            if not rec.variant_id and rec.record_id.product_id:
+                rec.variant_id = rec.record_id.product_id
 
     def _compute_weekdays_depends(self):
         return (
@@ -70,21 +94,45 @@ class ShopinvaderSeasonalConfigLine(models.Model):
 
     def create_bindings_from_lines(self, config_lines):
         to_create = []
-        all_backends = config_lines.shopinvader_bind_ids.backend_id
-        for backend in all_backends:
+        by_backend = defaultdict(config_lines.browse)
+        for line in config_lines:
+            backends = (
+                line.product_id.shopinvader_bind_ids.backend_id
+                or line.product_template_id.shopinvader_bind_ids.backend_id
+            )
+            for backend_id in set(backends.ids):
+                by_backend[backend_id] += line
+
+        for backend_id, lines in by_backend.items():
             existing = self.search(
                 [
-                    ("record_id", "in", config_lines.ids),
-                    ("backend_id", "=", backend.id),
+                    ("record_id", "in", lines.ids),
+                    ("backend_id", "=", backend_id),
                 ]
             )
-            missing = config_lines - existing.record_id
+            missing = lines - existing.record_id
             for line in missing:
-                to_create.append(self._prepare_config_line_values(backend, line))
-        return self.create(to_create)
+                variants = (
+                    line.product_id or line.product_template_id.product_variant_ids
+                )
+                for variant in variants:
+                    to_create.append(
+                        self._prepare_config_line_values(backend_id, line, variant)
+                    )
 
-    def _prepare_config_line_values(self, backend, line):
+        if to_create:
+            return self.create(to_create)
+        return self.browse()
+
+    def _prepare_config_line_values(self, backend_id, line, variant):
         return {
-            "backend_id": backend.id,
+            "backend_id": backend_id,
             "record_id": line.id,
+            "variant_id": variant.id,
         }
+
+    def _binding_create_values_get(self, vals):
+        if not vals.get("variant_id") and vals.get("record_id"):
+            orig_record = self.env["seasonal.config.line"].browse(vals["record_id"])
+            vals["variant_id"] = orig_record.product_id.id
+        return vals

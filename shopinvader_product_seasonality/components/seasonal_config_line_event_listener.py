@@ -11,15 +11,19 @@ class SeasonalConfigLineEventListener(Component):
 
     _apply_on = ["seasonal.config.line"]
 
-    @skip_if(lambda self, record, **kwargs: not record.product_id.shopinvader_bind_ids)
+    @skip_if(lambda self, record, **kw: self._check_product_bindings(record, **kw))
     def on_record_create(self, record, fields=None):
-        self._create_config_line_bindings_if_missing(record.product_id)
+        self._create_config_line_bindings_if_missing(record)
 
-    def _create_config_line_bindings_if_missing(self, prod):
-        config_model = self.env["seasonal.config.line"]
-        config_lines = config_model.find_for_product(prod)
-        if config_lines:
-            s_config_model = self.env["shopinvader.seasonal.config.line"]
-            s_config_model.with_delay().create_bindings_from_lines(config_lines)
+    def _check_product_bindings(self, record, **kw):
+        return not any(
+            (
+                record.product_id.shopinvader_bind_ids,
+                record.product_template_id.shopinvader_bind_ids,
+            )
+        )
 
-    # TODO: decide what to do when lines gets updated
+    def _create_config_line_bindings_if_missing(self, seasonal_config_line):
+        self.env[
+            "shopinvader.seasonal.config.line"
+        ].with_delay().create_bindings_from_lines(seasonal_config_line)

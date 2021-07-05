@@ -11,12 +11,13 @@ class SeasonalConfigLineEventListener(Component):
 
     _apply_on = ["seasonal.config.line"]
 
-    @skip_if(lambda self, record, **kw: self._check_product_bindings(record, **kw))
+    @skip_if(lambda self, record, **kw: not self._product_is_bound(record, **kw))
     def on_record_create(self, record, fields=None):
         self._create_config_line_bindings_if_missing(record)
 
-    def _check_product_bindings(self, record, **kw):
-        return not any(
+    def _product_is_bound(self, record, **kw):
+        """Check if related product is bound to the shop."""
+        return any(
             (
                 record.product_id.shopinvader_bind_ids,
                 record.product_template_id.shopinvader_bind_ids,

@@ -7,31 +7,45 @@ from odoo.addons.shopinvader.tests.common import UtilsMixin
 from odoo.addons.shopinvader_search_engine.tests.test_backend import BackendCaseBase
 
 
-class TestProductSeasonalityCase(BackendCaseBase):
+class TestProductSeasonalityCaseBase(
+    BackendCaseBase, UtilsMixin, ComponentRegistryCase
+):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        ComponentRegistryCase._setup_registry(cls)
+        cls._load_module_components(cls, "shopinvader_product_seasonality")
+        cls._load_module_components(
+            cls, "shopinvader_product_seasonality_search_engine"
+        )
         cls.seasonal_conf = cls.env["seasonal.config"].create(
             {
                 "name": "Test seasonal conf",
             }
         )
         cls.backend._add_missing_indexes()
+        cls.prod = cls.env.ref("product.product_product_2")
 
     def _create_line(self, **kw):
-        prod = self.env.ref("product.product_product_2")
         vals = {
             "seasonal_config_id": self.seasonal_conf.id,
             "date_start": "2021-05-10",
             "date_end": "2021-05-16",
             "monday": True,
             "tuesday": True,
-            "product_template_id": prod.product_tmpl_id.id,
-            "product_id": prod.id,
+            "product_template_id": self.prod.product_tmpl_id.id,
+            "product_id": self.prod.id,
             "backend_id": self.backend.id,
         }
         vals.update(kw)
         return self.env["shopinvader.seasonal.config.line"].create(vals)
+
+
+class TestProductSeasonalityCaseNoJobs(TestProductSeasonalityCaseBase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env = cls.env(context=dict(cls.env.context, test_queue_job_no_delay=True))
 
     def test_no_index(self):
         self.backend.index_ids.unlink()
@@ -49,24 +63,19 @@ class TestProductSeasonalityCase(BackendCaseBase):
         self.assertEqual(s_line.index_id, index)
 
     def test_json_data(self):
+        self._bind_products(self.prod, backend=self.backend)
         s_line = self._create_line(monday=False, tuesday=False)
-        # Not computed yet for search engine
-        self.assertEqual(s_line.get_shop_data(), {})
-        s_line.recompute_json()
         expected = {
             "config_id": s_line.seasonal_config_id.id,
             "date_end": "2021-05-16T02:00:00+02:00",
             "date_start": "2021-05-10T02:00:00+02:00",
             "id": s_line.id,
-            "objectID": s_line.id,
+            "objectID": s_line.record_id.id,
             "product_ids": [s_line.product_id.id],
             "weekdays": [2, 3, 4, 5, 6],
         }
         self.assertEqual(s_line.get_shop_data(), expected)
-        # change value, no repercution on indexed data
+        # change value
         s_line.monday = True
-        self.assertEqual(s_line.get_shop_data(), expected)
-        # until data is recomputed
-        s_line.recompute_json()
         expected["weekdays"] = [0, 2, 3, 4, 5, 6]
         self.assertEqual(s_line.get_shop_data(), expected)

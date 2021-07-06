@@ -34,6 +34,7 @@ class ShopinvaderSeasonalConfigLine(models.Model):
     # TODO: decide what to do w/ this
     active = fields.Boolean()
 
+    @api.depends("product_template_id.product_variant_ids", "product_id")
     def _compute_product_ids(self):
         for rec in self:
             rec.product_ids = (

@@ -107,7 +107,7 @@ class TestProductSeasonalityCase(
 
     def test_auto_create_binding(self):
         self._bind_products(self.prod2, backend=self.backend)
-        line = self.config_line_model.with_context(test_queue_job_no_delay=True).create(
+        line = self.config_line_model.create(
             {
                 "date_start": "2021-05-12",
                 "date_end": "2021-05-23",
@@ -123,7 +123,7 @@ class TestProductSeasonalityCase(
 
     def test_auto_create_binding_from_template(self):
         self._bind_products(self.prod2, backend=self.backend)
-        line = self.config_line_model.with_context(test_queue_job_no_delay=True).create(
+        line = self.config_line_model.create(
             {
                 "date_start": "2021-05-12",
                 "date_end": "2021-05-23",
@@ -142,8 +142,20 @@ class TestProductSeasonalityCase(
             sorted(all_variants.ids),
         )
 
+    def test_auto_update_binding(self):
+        # expected = {
+        #     "objectID": self.line2.id,
+        #     "config_id": self.line2.seasonal_config_id.id,
+        #     "product_ids": list(self.line2.product_template_id.product_variant_ids.ids),
+        #     "date_start": "2021-05-12T02:00:00+02:00",
+        #     "date_end": "2021-05-23T02:00:00+02:00",
+        #     "weekdays": [3, 4, 5, 6],
+        # }
+        data = self.s_line2.get_shop_data()
+        self.assertEqual(data["weekdays"], [3, 4, 5, 6])
+
     def test_bind_all_existing(self):
-        line = self.config_line_model.with_context(test_queue_job_no_delay=True).create(
+        line = self.config_line_model.create(
             {
                 "date_start": "2021-05-12",
                 "date_end": "2021-05-23",

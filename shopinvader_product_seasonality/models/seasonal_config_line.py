@@ -14,3 +14,8 @@ class SeasonalConfigLine(models.Model):
         string="Shopinvader Binding",
         context={"active_test": False},
     )
+    active = fields.Boolean(default=True, inverse="_inverse_active")
+
+    def _inverse_active(self):
+        brands = self.filtered(lambda p: not p.active)
+        brands.mapped("shopinvader_bind_ids").write({"active": False})

@@ -37,6 +37,7 @@ class QuotationService(Component):
         )
 
     # Validator
+
     def _validator_get(self):
         return {}
 
@@ -58,6 +59,9 @@ class QuotationService(Component):
         ]
 
     def _confirm_cart(self, quotation):
+        # TODO: Check when is this method called???
+        # It's a private method, and I can't find any reference to it being used.
+        # Ask simone
         quotation.action_confirm_cart()
         res = self._to_json(quotation)[0]
         return {

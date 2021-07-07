@@ -2,7 +2,6 @@
 # Benoît GUILLOT <benoit.guillot@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-
 from odoo.addons.component.core import Component
 
 
@@ -22,10 +21,12 @@ class CartService(Component):
         return res
 
     # Validator
+
     def _validator_request_quotation(self):
         return {}
 
     def _convert_one_sale(self, sale):
         res = super()._convert_one_sale(sale)
+        # TODO: Ask simone. Can't find how this is used or why
         res.update({"available_for_quotation": True})
         return res

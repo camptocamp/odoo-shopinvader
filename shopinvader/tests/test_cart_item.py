@@ -2,6 +2,8 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+import mock
+
 from odoo import exceptions
 from odoo.tools import mute_logger
 
@@ -61,6 +63,24 @@ class AbstractItemCase(ItemCaseMixin):
         self.assertEqual(cart["lines"]["count"], 2)
         self.check_product_and_qty(cart["lines"]["items"][0], self.product_1.id, 2)
         self.check_partner(cart)
+
+    def test_add_item_without_cart_with_defaults(self):
+        self.remove_cart()
+        last_order = self.env["sale.order"].search([], limit=1, order="id desc")
+        validator_add_item = dict(
+            self.service._validator_add_item(), cart__origin={"type": "string"}
+        )
+        with mock.patch.object(type(self.service), "_validator_add_item") as mocked:
+            mocked.return_value = validator_add_item
+            cart = self.add_item(self.product_1.id, 2, cart__origin="TEST_DEFAULT")
+        self.assertGreater(cart["id"], last_order.id)
+        self.assertEqual(len(cart["lines"]["items"]), 1)
+        self.assertEqual(cart["lines"]["count"], 2)
+        self.check_product_and_qty(cart["lines"]["items"][0], self.product_1.id, 2)
+        self.check_partner(cart)
+        self.assertEqual(
+            self.env["sale.order"].browse(cart["id"]).origin, "TEST_DEFAULT"
+        )
 
     def test_add_item_with_an_existing_cart(self):
         cart = self.service.search()["data"]

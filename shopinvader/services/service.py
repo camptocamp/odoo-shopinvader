@@ -242,15 +242,3 @@ class BaseShopinvaderService(AbstractComponent):
             values.update(session)
             res["set_session"] = values
         return res
-
-    def _extract_extra_params(self, prefix, **params):
-        """Pop out of `params` keys prefixed w/ given `prefix` if any.
-
-        :return: tuple(cleaned_params, extra_params)
-        """
-        _params = params.copy()
-        extra_params = {}
-        for key in params.keys():
-            if key.startswith(prefix):
-                extra_params[key[len(prefix) :]] = _params.pop(key)
-        return _params, extra_params

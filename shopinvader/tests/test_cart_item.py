@@ -67,12 +67,16 @@ class AbstractItemCase(ItemCaseMixin):
     def test_add_item_without_cart_with_defaults(self):
         self.remove_cart()
         last_order = self.env["sale.order"].search([], limit=1, order="id desc")
-        validator_add_item = dict(
-            self.service._validator_add_item(), cart__origin={"type": "string"}
+        _subvalidator_cart_default = dict(
+            self.service._validator_update(), origin={"type": "string"}
         )
-        with mock.patch.object(type(self.service), "_validator_add_item") as mocked:
-            mocked.return_value = validator_add_item
-            cart = self.add_item(self.product_1.id, 2, cart__origin="TEST_DEFAULT")
+        with mock.patch.object(
+            type(self.service), "_subvalidator_cart_default"
+        ) as mocked:
+            mocked.return_value = _subvalidator_cart_default
+            cart = self.add_item(
+                self.product_1.id, 2, _cart_default=dict(origin="TEST_DEFAULT")
+            )
         self.assertGreater(cart["id"], last_order.id)
         self.assertEqual(len(cart["lines"]["items"]), 1)
         self.assertEqual(cart["lines"]["count"], 2)

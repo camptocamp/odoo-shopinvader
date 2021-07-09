@@ -46,15 +46,12 @@ class CartService(Component):
 
     def add_item(self, **params):
         cart = self._get(create_if_not_found=False)
-        # Cart default params could be passed prefixed w/ `cart__`
-        params, cart_params = self._extract_cart_params(**params)
+
+        # Support passing default values for cart
+        cart_default_params = params.pop("_cart_default", {})
         if not cart:
-            cart = self._create_empty_cart(**cart_params)
-        # TODO: shall we update cart params before anyway?
-        # This would allow to do one call less to `cart/update`
-        # whenever we simply want to update a cart field.
-        # If this is helpful, we should consider extending `_validator_add_item`
-        # w/ `_validator_update` keys automatically prefixed w/ `cart__`.
+            cart = self._create_empty_cart(**cart_default_params)
+
         self._add_item(cart, params)
         return self._to_json(cart)
 
@@ -212,7 +209,12 @@ class CartService(Component):
                 "type": "integer",
             },
             "item_qty": {"coerce": float, "required": True, "type": "float"},
+            "_cart_default": self._subvalidator_cart_default(),
         }
+
+    def _subvalidator_cart_default(self):
+        # Hook here to allow cart params to be passed as default
+        return {"type": "dict", "schema": {}}
 
     def _validator_update_item(self):
         return {
@@ -446,9 +448,6 @@ class CartService(Component):
         if create_if_not_found:
             return self._create_empty_cart()
         return cart
-
-    def _extract_cart_params(self, **params):
-        return self._extract_extra_params("cart__", **params)
 
     def _create_empty_cart(self, **cart_params):
         vals = self._prepare_cart(**cart_params)

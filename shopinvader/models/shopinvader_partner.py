@@ -189,6 +189,7 @@ class ShopinvaderPartner(models.Model):
             "res_id": self.id,
             "context": dict(self.env.context),
         }
+
     def action_shopinvader_validate(self):
         wiz = self._get_shopinvader_validate_wizard()
         action = self.env.ref("shopinvader.shopinvader_partner_validate_act_window")

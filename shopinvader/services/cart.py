@@ -45,9 +45,13 @@ class CartService(Component):
             return self._to_json(cart)
 
     def add_item(self, **params):
-        cart = self._get()
+        cart = self._get(create_if_not_found=False)
+
+        # Support passing default values for cart
+        cart_default_params = params.pop("_cart_default", {})
         if not cart:
-            cart = self._create_empty_cart()
+            cart = self._create_empty_cart(**cart_default_params)
+
         self._add_item(cart, params)
         return self._to_json(cart)
 
@@ -205,7 +209,12 @@ class CartService(Component):
                 "type": "integer",
             },
             "item_qty": {"coerce": float, "required": True, "type": "float"},
+            "_cart_default": self._subvalidator_cart_default(),
         }
+
+    def _subvalidator_cart_default(self):
+        # Hook here to allow cart params to be passed as default
+        return {"type": "dict", "schema": {}}
 
     def _validator_update_item(self):
         return {
@@ -440,17 +449,21 @@ class CartService(Component):
             return self._create_empty_cart()
         return cart
 
-    def _create_empty_cart(self):
-        vals = self._prepare_cart()
+    def _create_empty_cart(self, **cart_params):
+        vals = self._prepare_cart(**cart_params)
         return self.env["sale.order"].create(vals)
 
-    def _prepare_cart(self):
+    def _prepare_cart(self, **cart_params):
         partner = self.partner or self.shopinvader_backend.anonymous_partner_id
-        vals = {
-            "typology": "cart",
-            "partner_id": partner.id,
-            "shopinvader_backend_id": self.shopinvader_backend.id,
-        }
+        vals = cart_params.copy()
+        # Ensure our mandatory values have precendence
+        vals.update(
+            {
+                "typology": "cart",
+                "partner_id": partner.id,
+                "shopinvader_backend_id": self.shopinvader_backend.id,
+            }
+        )
         vals.update(self.env["sale.order"].play_onchanges(vals, vals.keys()))
         if self.shopinvader_backend.account_analytic_id.id:
             vals[

@@ -46,8 +46,10 @@ class ProductCase(ProductCommonCase):
             {
                 "default": {
                     "discount": 0.0,
+                    "original_price": 750.0,
                     "original_value": 750.0,
                     "tax_included": True,
+                    "price": 750.0,
                     "value": 750.0,
                 }
             },
@@ -95,28 +97,32 @@ class ProductCase(ProductCommonCase):
         # self.base_pricelist doesn't define a tax mapping. We are tax included
         fiscal_position_fr = self.env.ref("shopinvader.fiscal_position_0")
         price = self.shopinvader_variant._get_price(
-            self.base_pricelist, fiscal_position_fr
+            pricelist=self.base_pricelist, fposition=fiscal_position_fr
         )
         self.assertDictEqual(
             price,
             {
                 "discount": 0.0,
+                "original_price": 750.0,
                 "original_value": 750.0,
                 "tax_included": True,
+                "price": 750.0,
                 "value": 750.0,
             },
         )
         # promotion price list define a discount of 20% on all product
         promotion_price_list = self.env.ref("shopinvader.pricelist_1")
         price = self.shopinvader_variant._get_price(
-            promotion_price_list, fiscal_position_fr
+            pricelist=promotion_price_list, fposition=fiscal_position_fr
         )
         self.assertDictEqual(
             price,
             {
                 "discount": 0.0,
+                "original_price": 600.0,
                 "original_value": 600.0,
                 "tax_included": True,
+                "price": 600.0,
                 "value": 600.0,
             },
         )
@@ -124,27 +130,79 @@ class ProductCase(ProductCommonCase):
         # excluded
         tax_exclude_fiscal_position = self.env.ref("shopinvader.fiscal_position_1")
         price = self.shopinvader_variant._get_price(
-            self.base_pricelist, tax_exclude_fiscal_position
+            pricelist=self.base_pricelist, fposition=tax_exclude_fiscal_position
         )
         self.assertDictEqual(
             price,
             {
                 "discount": 0.0,
+                "original_price": 652.17,
                 "original_value": 652.17,
                 "tax_included": False,
+                "price": 652.17,
                 "value": 652.17,
             },
         )
         price = self.shopinvader_variant._get_price(
-            promotion_price_list, tax_exclude_fiscal_position
+            pricelist=promotion_price_list, fposition=tax_exclude_fiscal_position
         )
         self.assertDictEqual(
             price,
             {
                 "discount": 0.0,
+                "original_price": 521.74,
                 "original_value": 521.74,
                 "tax_included": False,
+                "price": 521.74,
                 "value": 521.74,
+            },
+        )
+
+    def test_product_get_price_per_qty(self):
+        # Define a promotion price for the product with min_qty = 10
+        fposition = self.env.ref("shopinvader.fiscal_position_0")
+        pricelist = self.base_pricelist
+        self.env["product.pricelist.item"].create(
+            {
+                "name": "Discount on Product when Qty >= 10",
+                "pricelist_id": pricelist.id,
+                "base": "list_price",
+                "compute_price": "percentage",
+                "percent_price": "20",
+                "applied_on": "0_product_variant",
+                "product_id": self.shopinvader_variant.record_id.id,
+                "min_quantity": 10.0,
+            }
+        )
+        # Case 1 (qty = 1.0). No discount is applied
+        price = self.shopinvader_variant._get_price(
+            qty=1.0, pricelist=pricelist, fposition=fposition
+        )
+        self.assertDictEqual(
+            price,
+            {
+                "discount": 0.0,
+                "original_price": 750.0,
+                "original_value": 750.0,
+                "tax_included": True,
+                "price": 750.0,
+                "value": 750.0,
+            },
+        )
+        # Case 2 (qty = 10.0). Discount is applied
+        # promotion price list define a discount of 20% on all product
+        price = self.shopinvader_variant._get_price(
+            qty=10.0, pricelist=pricelist, fposition=fposition
+        )
+        self.assertDictEqual(
+            price,
+            {
+                "discount": 0.0,
+                "original_price": 600.0,
+                "original_value": 600.0,
+                "tax_included": True,
+                "price": 600.0,
+                "value": 600.0,
             },
         )
 
@@ -156,14 +214,16 @@ class ProductCase(ProductCommonCase):
         self.base_pricelist.discount_policy = "without_discount"
         fiscal_position_fr = self.env.ref("shopinvader.fiscal_position_0")
         price = self.shopinvader_variant._get_price(
-            self.base_pricelist, fiscal_position_fr
+            pricelist=self.base_pricelist, fposition=fiscal_position_fr
         )
         self.assertDictEqual(
             price,
             {
                 "tax_included": True,
+                "price": 750.0,
                 "value": 750.0,
                 "discount": 0.0,
+                "original_price": 750.0,
                 "original_value": 750.0,
             },
         )
@@ -172,14 +232,16 @@ class ProductCase(ProductCommonCase):
         promotion_price_list = self.env.ref("shopinvader.pricelist_1")
         promotion_price_list.discount_policy = "without_discount"
         price = self.shopinvader_variant._get_price(
-            promotion_price_list, fiscal_position_fr
+            pricelist=promotion_price_list, fposition=fiscal_position_fr
         )
         self.assertDictEqual(
             price,
             {
                 "tax_included": True,
+                "price": 600.0,
                 "value": 600.0,
                 "discount": 20.0,
+                "original_price": 750.0,
                 "original_value": 750.0,
             },
         )
@@ -189,26 +251,30 @@ class ProductCase(ProductCommonCase):
         # the original value
         tax_exclude_fiscal_position = self.env.ref("shopinvader.fiscal_position_1")
         price = self.shopinvader_variant._get_price(
-            self.base_pricelist, tax_exclude_fiscal_position
+            pricelist=self.base_pricelist, fposition=tax_exclude_fiscal_position
         )
         self.assertDictEqual(
             price,
             {
                 "tax_included": False,
+                "price": 652.17,
                 "value": 652.17,
                 "discount": 0.0,
+                "original_price": 652.17,
                 "original_value": 652.17,
             },
         )
         price = self.shopinvader_variant._get_price(
-            promotion_price_list, tax_exclude_fiscal_position
+            pricelist=promotion_price_list, fposition=tax_exclude_fiscal_position
         )
         self.assertDictEqual(
             price,
             {
                 "tax_included": False,
+                "price": 521.74,
                 "value": 521.74,
                 "discount": 20.0,
+                "original_price": 652.17,
                 "original_value": 652.17,
             },
         )

@@ -7,3 +7,5 @@ vcrpy
 vcrpy-unittest
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+odoo14-addon-product_template_tags @ git+https://github.com/OCA/product-attribute@refs/pull/880/head#subdirectory=setup/product_template_tags

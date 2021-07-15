@@ -22,32 +22,32 @@ class ShopinvaderVariant(models.Model):
         taxes = fposition.map_tax(taxes, product) if fposition else taxes
         # Compute tax amounts
         prices = taxes.compute_all(
-            res["price"],
+            res["value"],
             product=product,
             quantity=1.0,  # only use quantity for pricelist rules, not here
             currency=pricelist.currency_id if pricelist else None,
         )
         res.update(
             {
-                "price_untaxed": prices["total_excluded"],
-                "price_taxed": prices["total_included"],
-                "original_price_untaxed": prices["total_excluded"],
-                "original_price_taxed": prices["total_included"],
+                "value_untaxed": prices["total_excluded"],
+                "value_taxed": prices["total_included"],
+                "original_value_untaxed": prices["total_excluded"],
+                "original_value_taxed": prices["total_included"],
             }
         )
         # Handle pricelists.discount_policy == "without_discount"
         if pricelist and pricelist.discount_policy == "without_discount":
             # Compute tax amounts
             prices = taxes.compute_all(
-                res["original_price"],
+                res["original_value"],
                 product=product,
                 quantity=1.0,  # only use quantity for pricelist rules, not here
                 currency=pricelist.currency_id if pricelist else None,
             )
             res.update(
                 {
-                    "original_price_untaxed": prices["total_excluded"],
-                    "original_price_taxed": prices["total_included"],
+                    "original_value_untaxed": prices["total_excluded"],
+                    "original_value_taxed": prices["total_included"],
                 }
             )
         return res

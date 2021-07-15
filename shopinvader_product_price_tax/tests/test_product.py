@@ -22,10 +22,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             self.shopinvader_variant.price["default"],
             {
-                "price_taxed": 750.0,
-                "price_untaxed": 652.17,
-                "original_price_taxed": 750.0,
-                "original_price_untaxed": 652.17,
+                "value_taxed": 750.0,
+                "value_untaxed": 652.17,
+                "original_value_taxed": 750.0,
+                "original_value_untaxed": 652.17,
             },
         )
 
@@ -38,10 +38,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 750.0,
-                "price_untaxed": 652.17,
-                "original_price_taxed": 750.0,
-                "original_price_untaxed": 652.17,
+                "value_taxed": 750.0,
+                "value_untaxed": 652.17,
+                "original_value_taxed": 750.0,
+                "original_value_untaxed": 652.17,
             },
         )
         # promotion price list define a discount of 20% on all product
@@ -52,10 +52,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 600.0,
-                "price_untaxed": 521.74,
-                "original_price_taxed": 600.0,
-                "original_price_untaxed": 521.74,
+                "value_taxed": 600.0,
+                "value_untaxed": 521.74,
+                "original_value_taxed": 600.0,
+                "original_value_untaxed": 521.74,
             },
         )
         # use a fiscal position defining a mapping from tax included to tax
@@ -67,10 +67,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 750.0,
-                "price_untaxed": 652.17,
-                "original_price_taxed": 750.0,
-                "original_price_untaxed": 652.17,
+                "value_taxed": 750.0,
+                "value_untaxed": 652.17,
+                "original_value_taxed": 750.0,
+                "original_value_untaxed": 652.17,
             },
         )
         price = self.shopinvader_variant._get_price(
@@ -79,10 +79,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 600.0,
-                "price_untaxed": 521.74,
-                "original_price_taxed": 600.0,
-                "original_price_untaxed": 521.74,
+                "value_taxed": 600.0,
+                "value_untaxed": 521.74,
+                "original_value_taxed": 600.0,
+                "original_value_untaxed": 521.74,
             },
         )
 
@@ -109,10 +109,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 750.0,
-                "price_untaxed": 652.17,
-                "original_price_taxed": 750.0,
-                "original_price_untaxed": 652.17,
+                "value_taxed": 750.0,
+                "value_untaxed": 652.17,
+                "original_value_taxed": 750.0,
+                "original_value_untaxed": 652.17,
             },
         )
         # Case 2 (qty = 10.0). Discount is applied
@@ -123,10 +123,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 600.0,
-                "price_untaxed": 521.74,
-                "original_price_taxed": 600.0,
-                "original_price_untaxed": 521.74,
+                "value_taxed": 600.0,
+                "value_untaxed": 521.74,
+                "original_value_taxed": 600.0,
+                "original_value_untaxed": 521.74,
             },
         )
 
@@ -143,10 +143,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 750.0,
-                "price_untaxed": 652.17,
-                "original_price_taxed": 750.0,
-                "original_price_untaxed": 652.17,
+                "value_taxed": 750.0,
+                "value_untaxed": 652.17,
+                "original_value_taxed": 750.0,
+                "original_value_untaxed": 652.17,
             },
         )
         # promotion price list define a discount of 20% on all product
@@ -159,10 +159,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 600.0,
-                "price_untaxed": 521.74,
-                "original_price_taxed": 750.0,
-                "original_price_untaxed": 652.17,
+                "value_taxed": 600.0,
+                "value_untaxed": 521.74,
+                "original_value_taxed": 750.0,
+                "original_value_untaxed": 652.17,
             },
         )
         # use the fiscal position defining a mapping from tax included to tax
@@ -176,10 +176,10 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 750.0,
-                "price_untaxed": 652.17,
-                "original_price_taxed": 750.0,
-                "original_price_untaxed": 652.17,
+                "value_taxed": 750.0,
+                "value_untaxed": 652.17,
+                "original_value_taxed": 750.0,
+                "original_value_untaxed": 652.17,
             },
         )
         price = self.shopinvader_variant._get_price(
@@ -188,9 +188,9 @@ class ProductCase(ProductCommonCase):
         self._assertDictContains(
             price,
             {
-                "price_taxed": 600.0,
-                "price_untaxed": 521.74,
-                "original_price_taxed": 750.0,
-                "original_price_untaxed": 652.17,
+                "value_taxed": 600.0,
+                "value_untaxed": 521.74,
+                "original_value_taxed": 750.0,
+                "original_value_untaxed": 652.17,
             },
         )

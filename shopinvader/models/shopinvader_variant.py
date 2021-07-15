@@ -186,16 +186,12 @@ class ShopinvaderVariant(models.Model):
 
         :returns: dict with the following keys:
 
-            <price>                 The product unitary price
+            <value>                 The product unitary price
             <tax_included>          True if product taxes are included in <price>.
 
             If the pricelist.discount_policy is "without_discount":
-            <original_price>        The original price (before pricelist is applied).
+            <original_value>        The original price (before pricelist is applied).
             <discount>              The discounted percentage.
-
-            For backwards compatibility (deprecated, to be removed):
-            <value>                 Same as <price>
-            <original_value>        Same as <original_price>
         """
         self.ensure_one()
         AccountTax = self.env["account.tax"]
@@ -222,11 +218,13 @@ class ShopinvaderVariant(models.Model):
         price_unit = AccountTax._fix_tax_included_price_company(
             price_unit, product.taxes_id, taxes, company
         )
+        # TODO: During next migration, rename value and original_value to
+        # price and original_price. #CallThingsByTheirName
         res = {
-            "price": price_unit,
+            "value": price_unit,
             "tax_included": any(tax.price_include for tax in taxes),
             # Default values in case price.discuont_policy != "without_discount"
-            "original_price": price_unit,
+            "original_value": price_unit,
             "discount": 0.0,
         }
         # Handle pricelists.discount_policy == "without_discount"
@@ -239,14 +237,13 @@ class ShopinvaderVariant(models.Model):
                 product, rule_id, qty, product.uom_id, pricelist.id
             )
             # Convert currency if necessary
-            if original_price_unit != 0:
-                if pricelist.currency_id != currency:
-                    original_price_unit = currency._convert(
-                        original_price_unit,
-                        pricelist.currency_id,
-                        company or self.env.company,
-                        fields.Date.today(),
-                    )
+            if original_price_unit != 0 and pricelist.currency_id != currency:
+                original_price_unit = currency._convert(
+                    original_price_unit,
+                    pricelist.currency_id,
+                    company or self.env.company,
+                    fields.Date.today(),
+                )
             # Compute discount
             price_dp = self.env["decimal.precision"].precision_get("Product Price")
             if float_compare(
@@ -266,18 +263,10 @@ class ShopinvaderVariant(models.Model):
             )
             res.update(
                 {
-                    "original_price": original_price_unit,
+                    "original_value": original_price_unit,
                     "discount": discount,
                 }
             )
-        # Keep backwards compatibility with deprecated keys
-        # TODO: Remove this in the future
-        res.update(
-            {
-                "value": res["price"],
-                "original_value": res["original_price"],
-            }
-        )
         return res
 
     def _compute_main_product(self):

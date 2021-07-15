@@ -46,10 +46,8 @@ class ProductCase(ProductCommonCase):
             {
                 "default": {
                     "discount": 0.0,
-                    "original_price": 750.0,
                     "original_value": 750.0,
                     "tax_included": True,
-                    "price": 750.0,
                     "value": 750.0,
                 }
             },
@@ -103,10 +101,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "discount": 0.0,
-                "original_price": 750.0,
                 "original_value": 750.0,
                 "tax_included": True,
-                "price": 750.0,
                 "value": 750.0,
             },
         )
@@ -119,10 +115,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "discount": 0.0,
-                "original_price": 600.0,
                 "original_value": 600.0,
                 "tax_included": True,
-                "price": 600.0,
                 "value": 600.0,
             },
         )
@@ -136,10 +130,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "discount": 0.0,
-                "original_price": 652.17,
                 "original_value": 652.17,
                 "tax_included": False,
-                "price": 652.17,
                 "value": 652.17,
             },
         )
@@ -150,10 +142,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "discount": 0.0,
-                "original_price": 521.74,
                 "original_value": 521.74,
                 "tax_included": False,
-                "price": 521.74,
                 "value": 521.74,
             },
         )
@@ -182,10 +172,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "discount": 0.0,
-                "original_price": 750.0,
                 "original_value": 750.0,
                 "tax_included": True,
-                "price": 750.0,
                 "value": 750.0,
             },
         )
@@ -198,10 +186,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "discount": 0.0,
-                "original_price": 600.0,
                 "original_value": 600.0,
                 "tax_included": True,
-                "price": 600.0,
                 "value": 600.0,
             },
         )
@@ -220,10 +206,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "tax_included": True,
-                "price": 750.0,
                 "value": 750.0,
                 "discount": 0.0,
-                "original_price": 750.0,
                 "original_value": 750.0,
             },
         )
@@ -238,10 +222,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "tax_included": True,
-                "price": 600.0,
                 "value": 600.0,
                 "discount": 20.0,
-                "original_price": 750.0,
                 "original_value": 750.0,
             },
         )
@@ -257,10 +239,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "tax_included": False,
-                "price": 652.17,
                 "value": 652.17,
                 "discount": 0.0,
-                "original_price": 652.17,
                 "original_value": 652.17,
             },
         )
@@ -271,10 +251,8 @@ class ProductCase(ProductCommonCase):
             price,
             {
                 "tax_included": False,
-                "price": 521.74,
                 "value": 521.74,
                 "discount": 20.0,
-                "original_price": 652.17,
                 "original_value": 652.17,
             },
         )

@@ -29,6 +29,18 @@ class ResPartner(models.Model):
         compute="_compute_has_invader_user",
         help="At least one backend has an invader user for this partner.",
     )
+    invader_address_share_policy = fields.Selection(
+        [
+            ("public", "Public"),
+            ("private", "Private"),
+        ],
+        string="Shop Address Share Policy",
+        help="In a multi user environment, controls who can view this address\n\n"
+        "* `Public`: Shared among all company's users.\n"
+        "* `Private`: Only the user who created it and company's admin users.\n",
+        default="public",
+        required=True,
+    )
 
     _sql_constraints = [
         (

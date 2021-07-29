@@ -7,3 +7,5 @@ vcrpy
 vcrpy-unittest
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+odoo14-addon-account_invoice_base_invoicing_mode @git+https://github.com/OCA/account-invoicing@refs/pull/844/head#subdirectory=setup/account_invoice_base_invoicing_mode

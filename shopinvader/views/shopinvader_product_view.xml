@@ -47,9 +47,9 @@
         <field name="model">shopinvader.product</field>
         <field name="arch" type="xml">
             <tree>
-                <field name="backend_id" />
-                <field name="lang_id" />
                 <field name="name" />
+                <field name="backend_id" />
+                <field name="lang_id" optional="show" />
                 <field name="sync_date" />
             </tree>
         </field>

@@ -54,9 +54,16 @@ class QuotationService(Component):
     # All params are trusted as they have been checked before
 
     def _get_base_search_domain(self):
-        return self._default_domain_for_partner_records() + [
+        show_all = self.shopinvader_backend.quotation_expose_all
+        with_backend = not show_all
+        return self._default_domain_for_partner_records(with_backend=with_backend) + [
             ("typology", "=", "quotation"),
         ]
 
     def _confirm(self, order):
+        # If user can see all quotations, bind the order to current backend if not set yet.
+        show_all = self.shopinvader_backend.quotation_expose_all
+        if show_all and not order.shopinvader_backend_id:
+            order = order.with_context(_skip_cart_check=True)
+            order.shopinvader_backend_id = self.shopinvader_backend
         return order.action_confirm_cart()

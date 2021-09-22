@@ -26,3 +26,31 @@ class ShopinvaderCartQuotationCase(CommonConnectedCartCase):
         self.assertIn(
             "only_quotation", response["data"]["lines"]["items"][0]["product"]
         )
+
+    def test_send(self):
+        order = self.cart.copy({"typology": "sale"})
+        self.assertEqual(order.typology, "sale")
+        order.action_quotation_sent()
+        self.assertEqual(order.state, "sent")
+        self.assertEqual(order.typology, "quotation")
+
+    def test_visibiliy(self):
+        order = self.cart.copy({"typology": "sale"})
+        response = self.quotation_service.dispatch("search")
+        self.assertNotIn(order.id, [x["id"] for x in response["data"]])
+        self.backend.quotation_expose_all = True
+        response = self.quotation_service.dispatch("search")
+        self.assertNotIn(order.id, [x["id"] for x in response["data"]])
+        order.action_quotation_sent()
+        response = self.quotation_service.dispatch("search")
+        self.assertIn(order.id, [x["id"] for x in response["data"]])
+
+    def test_confirm_from_shop(self):
+        order = self.cart.copy(
+            {"typology": "quotation", "shopinvader_backend_id": False}
+        )
+        self.assertEqual(order.typology, "quotation")
+        self.assertFalse(order.shopinvader_backend_id)
+        self.quotation_service.dispatch("confirm", order.id)
+        self.assertEqual(order.typology, "sale")
+        self.assertEqual(order.shopinvader_backend_id, self.backend)

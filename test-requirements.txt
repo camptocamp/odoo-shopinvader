@@ -7,3 +7,8 @@ vcrpy
 vcrpy-unittest
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+# TODO: REMOVE THIS BEFORE MERGING
+odoo14-addon-mass_mailing_contact_partner @git+https://github.com/OCA/social@refs/pull/767/head#subdirectory=setup/mass_mailing_contact_partner
+odoo14-addon-mass_mailing_subscription_date @git+https://github.com/OCA/social@refs/pull/772/head#subdirectory=setup/mass_mailing_subscription_date
+odoo14-addon-mass_mailing_company_newsletter @git+https://github.com/OCA/social@refs/pull/774/head#subdirectory=setup/mass_mailing_company_newsletter

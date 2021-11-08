@@ -75,14 +75,9 @@ class ResPartner(models.Model):
     )
 
     @api.model
-    def _is_partner_duplicate_allowed(self):
-        """Check if partner duplication is allowed
-
-        This parameter is configured through res.config.settings
-        """
+    def _is_partner_duplicate_prevented(self):
         get_param = self.env["ir.config_parameter"].sudo().get_param
-        param = get_param("shopinvader.no_partner_duplicate")
-        return not str2bool(param, True)
+        return str2bool(get_param("shopinvader.no_partner_duplicate"))
 
     @api.depends("is_blacklisted")
     def _compute_opt_in(self):
@@ -177,10 +172,11 @@ class ResPartner(models.Model):
             else:
                 partner.address_type = "profile"
 
-    @api.constrains("email")
+    @api.constrains("email", "has_shopinvader_user_active")
     def _check_unique_email(self):
-        if self._is_partner_duplicate_allowed():
+        if not self._is_partner_duplicate_prevented():
             return True
+        self.env["res.partner"].flush(["email", "has_shopinvader_user_active"])
         self.env.cr.execute(
             """
             SELECT
@@ -192,7 +188,9 @@ class ResPartner(models.Model):
                     ROW_NUMBER() OVER (PARTITION BY email) AS Row
                 FROM
                     res_partner
-                WHERE email is not null and active = True
+                WHERE email is not null
+                    and active = True
+                    and has_shopinvader_user_active = True
                 ) dups
             WHERE dups.Row > 1;
         """

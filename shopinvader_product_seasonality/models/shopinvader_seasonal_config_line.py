@@ -38,7 +38,7 @@ class ShopinvaderSeasonalConfigLine(models.Model):
     def _compute_product_ids(self):
         for rec in self:
             rec.product_ids = (
-                # Either specific proudct ID or all variants for the template
+                # Either specific product ID or all variants for the template
                 rec.product_id.ids
                 or rec.product_template_id.product_variant_ids.ids
             )

@@ -54,9 +54,7 @@ class SeasonalConfigLineEventListener(Component):
     def _needs_update(self, fields=None):
         fields = fields or []
         check_fields = self._fields_triggering_update()
-        for fname in fields:
-            if fname in check_fields:
-                return True
+        return any(field in check_fields for field in fields)
 
     def _handle_product_not_bound_anymore(self, record):
         record.shopinvader_bind_ids.filtered(lambda x: x.active).write(

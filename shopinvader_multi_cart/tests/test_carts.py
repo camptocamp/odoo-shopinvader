@@ -14,10 +14,11 @@ class CommonConnectedMultiCartCase(CommonConnectedCartCase):
         super().setUp(*args, **kwargs)
         # TODO: This should be done in setUpClass, but it needs
         # to be changed in shopinvader's CommonConnectedCartCase
-        # Link sale_order_1 to our partner
-        self.cart_2 = self.env.ref("shopinvader.sale_order_1")
-        self.cart_2.partner_id = self.partner
-        self.carts = self.cart | self.cart_2
+        self.stored_cart = self.cart.copy(
+            {
+                "typology": "stored",
+            }
+        )
         # rename service -> cart_service
         self.cart_service = self.service
         # multiple carts service
@@ -30,58 +31,85 @@ class CommonConnectedMultiCartCase(CommonConnectedCartCase):
         if "set_session" in response:
             self.shopinvader_session.update(response["set_session"])
 
+    def _search(self):
+        """Wrapper around `search` to return only cart_ids"""
+        res = self.service.dispatch("search")
+        cart_ids = list({cart["id"] for cart in res["data"]})
+        return cart_ids
+
+    def _select(self, cart_id):
+        """Wrapper around `select` that updates shopinvader_session"""
+        res = self.service.dispatch("select", cart_id)
+        self._update_shopinvader_session_from_response(res)
+        return res
+
+    def _delete(self, cart_id):
+        """Wrapper around `delete` that updates shopinvader_session"""
+        res = self.service.dispatch("delete", cart_id)
+        self._update_shopinvader_session_from_response(res)
+        return res
+
+    def _store(self):
+        """Wrapper around cart_service's `store` that updates shopinvader_session"""
+        res = self.cart_service.dispatch("store")
+        self._update_shopinvader_session_from_response(res)
+        return res
+
 
 class TestCarts(CommonConnectedMultiCartCase):
     def test_carts_search(self):
-        res = self.service.dispatch("search")
-        cart_ids = {cart["id"] for cart in res["data"]}
-        self.assertEqual(cart_ids, set(self.carts.ids))
+        self.assertEqual(self._search(), self.stored_cart.ids)
 
     def test_carts_search_unauthorized(self):
-        # cart_2 now belongs to another partner
-        self.cart_2.partner_id = self.env.ref("shopinvader.anonymous")
-        res = self.service.dispatch("search")
-        cart_ids = {cart["id"] for cart in res["data"]}
-        self.assertEqual(cart_ids, set(self.cart.ids))
+        # stored_cart now belongs to another partner
+        self.stored_cart.partner_id = self.env.ref("shopinvader.anonymous")
+        self.assertFalse(self._search())
 
     def test_carts_select(self):
-        self.assertEqual(self.cart_service.cart_id, self.cart.id)
-        res = self.service.dispatch("select", self.cart_2.id)
-        self._update_shopinvader_session_from_response(res)
+        self._select(self.stored_cart.id)
         self.assertEqual(
             self.cart_service.cart_id,
-            self.cart_2.id,
+            self.stored_cart.id,
             "Current cart should've been changed from session",
+        )
+        self.assertEqual(
+            self._search(), self.cart.ids, "The previous cart should've been stored"
         )
 
     def test_carts_select_unauthorized(self):
-        # cart_2 now belongs to another partner
-        self.cart_2.partner_id = self.env.ref("shopinvader.anonymous")
+        # stored_cart now belongs to another partner
+        self.stored_cart.partner_id = self.env.ref("shopinvader.anonymous")
         with self.assertRaises(MissingError):
-            self.service.dispatch("select", self.cart_2.id)
+            self._select(self.stored_cart.id)
+        self.assertEqual(
+            self.cart_service.cart_id,
+            self.cart.id,
+            "Current cart shouldn't have been changed from session",
+        )
 
     def test_carts_delete(self):
-        # Case 1: Delete secondary cart
-        res = self.service.dispatch("delete", self.cart_2.id)
-        self._update_shopinvader_session_from_response(res)
-        self.assertEqual(len(self.carts.exists()), 1, "Only one cart should be left")
+        self._delete(self.stored_cart.id)
+        self.assertFalse(self.stored_cart.exists())
         self.assertEqual(
             self.cart_service.cart_id,
             self.cart.id,
             "Current cart should remain unchanged from session",
         )
-        # Case 2: Delete the main cart
-        res = self.service.dispatch("delete", self.cart.id)
-        self._update_shopinvader_session_from_response(res)
-        self.assertEqual(len(self.carts.exists()), 0, "All carts removed")
-        self.assertEqual(
-            self.cart_service.cart_id,
-            0,
-            "Current cart should've been cleared from session",
-        )
 
     def test_carts_delete_unauthorized(self):
-        # cart_2 now belongs to another partner
-        self.cart_2.partner_id = self.env.ref("shopinvader.anonymous")
+        # stored_cart now belongs to another partner
+        self.stored_cart.partner_id = self.env.ref("shopinvader.anonymous")
         with self.assertRaises(MissingError):
-            self.service.dispatch("delete", self.cart_2.id)
+            self._delete(self.stored_cart.id)
+
+    def test_cart_store(self):
+        self._store()
+        self.assertFalse(
+            self.cart_service.cart_id,
+            "The cart should've been cleared from session",
+        )
+        self.assertIn(self.cart.id, self._search(), "The cart should've been stored")
+
+    def test_cart_store_without_cart(self):
+        self.cart.unlink()
+        self._store()  # nothing should happen

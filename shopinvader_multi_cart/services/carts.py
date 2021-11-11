@@ -21,7 +21,7 @@ class CartsService(Component):
     # secure params and the linked validator !
 
     def search(self, **params):
-        """Gets every cart related to logged user
+        """Gets every saved cart related to logged user
         :param params: dict/json
         :return: dict
         """
@@ -37,16 +37,18 @@ class CartsService(Component):
 
     def select(self, _id):
         """Selects the cart with the given id.
+
+        If there's already an active cart, it will be stored.
+
         :param _id: int
         :return: dict/json
         """
+        # First, store the current cart (if any)
+        self.component("cart").store()
+        # Then, select the new one
         cart = self._get(_id)
-        cart_data = self._to_json(cart)[0]
-        return {
-            "data": cart_data,
-            "store_cache": {"cart": cart_data},
-            "set_session": {"cart_id": cart.id},
-        }
+        self._restore(cart)
+        return self.component("cart")._to_json(cart)
 
     def delete(self, _id):
         """Deletes the cart with the given id.
@@ -54,24 +56,18 @@ class CartsService(Component):
         """
         cart = self._get(_id)
         cart.unlink()
-        if self.shopinvader_session.get("cart_id") == _id:
-            return self._clear_session_cart()
         return {}
 
     # The following methods are 'private' and should be never NEVER be called
     # from the controller.
     # All params are trusted as they have been checked before
 
-    def _clear_session_cart(self):
-        return {
-            "data": {},
-            "store_cache": {"cart": {}},
-            "set_session": {"cart_id": 0},
-        }
+    def _restore(self, cart):
+        cart.typology = "cart"
 
-    def _get_sale_order_cart_domain(self):
+    def _get_sale_order_stored_cart_domain(self):
         return [
-            ("typology", "=", "cart"),
+            ("typology", "=", "stored"),
             ("state", "=", "draft"),
         ]
 
@@ -90,7 +86,7 @@ class CartsService(Component):
             expression.AND(
                 [
                     self._default_domain_for_partner_records(),
-                    self._get_sale_order_cart_domain(),
+                    self._get_sale_order_stored_cart_domain(),
                 ]
             )
         )
@@ -109,7 +105,4 @@ class CartsService(Component):
         return {}
 
     def _validator_delete(self):
-        return {}
-
-    def _validator_new(self):
         return {}

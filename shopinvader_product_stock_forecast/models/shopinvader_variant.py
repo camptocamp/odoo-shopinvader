@@ -92,8 +92,10 @@ class ShopinvaderVariant(models.Model):
         self.env.cr.execute(query, params)
         data = self.env.cr.dictfetchall()
         # Convert date to string, for it to be serializable
+        # TODO: Possibly use this encoder everywhere in shopinvader
+        # https://github.com/OCA/rest-framework/blob/e9bb95272/base_rest/http.py#L47
         for row in data:
-            row["date"] = fields.Datetime.to_string(row["date"])
+            row["date"] = row["date"].isoformat()
         return data
 
     def _prepare_stock_data(self):

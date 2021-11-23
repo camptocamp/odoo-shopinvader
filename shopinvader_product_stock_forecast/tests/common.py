@@ -2,9 +2,22 @@
 # @author Iván Todorovich <ivan.todorovich@camptocamp.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+from datetime import datetime
+
 from freezegun import freeze_time
 
+from odoo import fields
+
 from odoo.addons.shopinvader_product_stock.tests.common import StockCommonCase
+
+
+def isoformat2odoo(datestr):
+    # replaces the fromisoformatm, not available in python 3.6
+    # in python >= 3.7 it could be done like this:
+    # return fields.Datetime.to_string(datetime.fromisoformat(datestr))
+    format_string = r"%Y-%m-%dT%H:%M:%S"
+    dt = datetime.strptime(datestr, format_string)
+    return fields.Datetime.to_string(dt)
 
 
 @freeze_time("2021-12-01 00:00:00")
@@ -63,4 +76,4 @@ class StockForecastCommonCase(StockCommonCase):
         return cls.env["stock.move"].create(vals_list)
 
     def _to_moves_data(self, forecast_data):
-        return [(d["date"], d["qty"]) for d in forecast_data]
+        return [(isoformat2odoo(d["date"]), d["qty"]) for d in forecast_data]

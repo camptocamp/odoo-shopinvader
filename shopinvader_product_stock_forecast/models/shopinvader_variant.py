@@ -34,9 +34,6 @@ class ShopinvaderVariant(models.Model):
                 ON ld.parent_path LIKE CONCAT('%%/', whd.view_location_id, '/%%')
         """
 
-    def _prepare_stock_forecast_group_by(self):
-        return "m.date"
-
     def _prepare_stock_forecast_where_clause(self):
         """Prepare the where and where params for the forecast query"""
         where_clause = """
@@ -66,6 +63,12 @@ class ShopinvaderVariant(models.Model):
             where_clause_params.append(dt_end)
         return where_clause, where_clause_params
 
+    def _prepare_stock_forecast_group_by(self):
+        return "m.date"
+
+    def _prepare_stock_forecast_order_by(self):
+        return "1 ASC"
+
     def _prepare_stock_forecast_data(self):
         """Prepare the stock forecast data"""
         query = sql.SQL(
@@ -74,6 +77,7 @@ class ShopinvaderVariant(models.Model):
             FROM {from_clause}
             WHERE {where_clause}
             GROUP BY {group_by}
+            ORDER BY {order_by}
             """
         )
         where_clause, params = self._prepare_stock_forecast_where_clause()
@@ -82,6 +86,7 @@ class ShopinvaderVariant(models.Model):
             from_clause=sql.SQL(self._prepare_stock_forecast_from()),
             where_clause=sql.SQL(where_clause),
             group_by=sql.SQL(self._prepare_stock_forecast_group_by()),
+            order_by=sql.SQL(self._prepare_stock_forecast_order_by()),
         )
         self.env["base"].flush()
         self.env.cr.execute(query, params)

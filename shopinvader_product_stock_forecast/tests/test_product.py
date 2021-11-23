@@ -39,26 +39,42 @@ class TestProductStockForecast(StockForecastCommonCase):
         self.shopinvader_backend.product_stock_forecast_horizon = 1  # days
         self.shopinvader_product.recompute_json()
         forecast = self.shopinvader_product.data["stock"]["global"]["forecast"]
-        self.assertEqual(
-            self._to_moves_data(forecast),
-            [
-                ("2021-12-01 06:00:00", 10),
-                ("2021-12-01 07:30:00", -5),
-                ("2021-12-01 08:00:00", 10),
-            ],
-        )
+        expected = [
+            ("2021-12-01 06:00:00", 10),
+            ("2021-12-01 07:30:00", -5),
+            ("2021-12-01 08:00:00", 10),
+        ]
+        self.assertEqual(self._to_moves_data(forecast), expected)
 
     def test_stock_forecast_horizon_2_days(self):
         self.shopinvader_backend.product_stock_forecast_horizon = 2  # days
         self.shopinvader_product.recompute_json()
         forecast = self.shopinvader_product.data["stock"]["global"]["forecast"]
-        self.assertEqual(
-            self._to_moves_data(forecast),
-            [
-                ("2021-12-01 06:00:00", 10),
-                ("2021-12-01 07:30:00", -5),
-                ("2021-12-01 08:00:00", 10),
-                ("2021-12-02 06:00:00", 20),
-                ("2021-12-02 10:30:00", -5),
-            ],
+        expected = [
+            ("2021-12-01 06:00:00", 10),
+            ("2021-12-01 07:30:00", -5),
+            ("2021-12-01 08:00:00", 10),
+            ("2021-12-02 06:00:00", 20),
+            ("2021-12-02 10:30:00", -5),
+        ]
+        self.assertEqual(self._to_moves_data(forecast), expected)
+
+    def test_stock_forecast_order(self):
+        """Forecast should always be sorted"""
+        self._create_stock_moves([("2021-12-01 10:00:00", 10)])._action_confirm(
+            merge=False
         )
+        self.shopinvader_product.recompute_json()
+        forecast = self.shopinvader_product.data["stock"]["global"]["forecast"]
+        expected = [
+            ("2021-12-01 06:00:00", 10),
+            ("2021-12-01 07:30:00", -5),
+            ("2021-12-01 08:00:00", 10),
+            ("2021-12-01 10:00:00", 10),  # ⬅ new move
+            ("2021-12-02 06:00:00", 20),
+            ("2021-12-02 10:30:00", -5),
+            ("2021-12-03 06:00:00", 20),
+            ("2021-12-04 10:30:00", -5),
+            ("2021-12-05 07:30:00", -10),
+        ]
+        self.assertEqual(self._to_moves_data(forecast), expected)

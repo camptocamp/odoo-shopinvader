@@ -115,6 +115,8 @@ class BaseShopinvaderService(AbstractComponent):
 
     @property
     def _exposed_model(self):
+        if not getattr(self, "_expose_model", False):
+            return None
         return self.env[self._expose_model]
 
     def _paginate_search(

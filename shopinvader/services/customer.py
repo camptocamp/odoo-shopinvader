@@ -100,6 +100,12 @@ class CustomerService(Component):
             "vat",
             "company_name",
             "function",
+            "street",
+            "street2",
+            "zip",
+            "city",
+            "phone",
+            "country",
         ]
         # fmt: on
 

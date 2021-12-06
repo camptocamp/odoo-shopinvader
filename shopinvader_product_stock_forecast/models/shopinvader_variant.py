@@ -69,8 +69,13 @@ class ShopinvaderVariant(models.Model):
     def _prepare_stock_forecast_order_by(self):
         return "1 ASC"
 
-    def _prepare_stock_forecast_data(self):
-        """Prepare the stock forecast data"""
+    def _prepare_stock_forecast_raw_data(self):
+        """Prepare the stock forecast raw data
+
+        :returns: list of dicts {date, qty}
+            date: date of the forecast move
+            qty: stock variation
+        """
         query = sql.SQL(
             """
             SELECT {select}
@@ -90,7 +95,11 @@ class ShopinvaderVariant(models.Model):
         )
         self.env["base"].flush()
         self.env.cr.execute(query, params)
-        data = self.env.cr.dictfetchall()
+        return self.env.cr.dictfetchall()
+
+    def _prepare_stock_forecast_data(self):
+        """Prepare the stock forecast data, ready to be serialized"""
+        data = self._prepare_stock_forecast_raw_data()
         # Convert date to string, for it to be serializable
         # TODO: Possibly use this encoder everywhere in shopinvader
         # https://github.com/OCA/rest-framework/blob/e9bb95272/base_rest/http.py#L47

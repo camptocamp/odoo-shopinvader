@@ -7,3 +7,6 @@ vcrpy
 vcrpy-unittest
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+# TODO: remove before merging ⚠️
+odoo14-addon-shopinvader_product_stock_forecast @git+https://github.com/shopinvader/odoo-shopinvader@refs/pull/1184/head#subdirectory=setup/shopinvader_product_stock_forecast

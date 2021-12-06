@@ -67,4 +67,4 @@ class QuotationService(Component):
         ]
 
     def _confirm(self, order):
-        return order.action_confirm_cart()
+        return order.action_confirm()

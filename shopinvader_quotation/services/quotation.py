@@ -1,8 +1,10 @@
 # Copyright 2016 Akretion (http://www.akretion.com)
-# Copyright 2021 Camptocamp (http://www.camptocamp.com).
 # @author Benoît GUILLOT <benoit.guillot@akretion.com>
+# Copyright 2021 Camptocamp (http://www.camptocamp.com)
+# @author Simone Orsi <simone.orsi@camptocamp.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
+from odoo.addons.base_rest.components.service import to_int
 from odoo.addons.component.core import Component
 
 
@@ -49,14 +51,37 @@ class QuotationService(Component):
     def _validator_confirm(self):
         return {}
 
+    def _validator_search(self):
+        res = self._default_validator_search()
+        res.pop("domain", None)
+        res.update({"id": {"coerce": to_int, "type": "integer"}})
+        return res
+
     # The following method are 'private' and should be never never NEVER call
     # from the controller.
     # All params are trusted as they have been checked before
 
     def _get_base_search_domain(self):
-        return self._default_domain_for_partner_records() + [
-            ("typology", "=", "quotation"),
-        ]
+        show_all = self.shopinvader_backend.quotation_expose_all
+        if show_all:
+            # Expose all records bound to current backend or not bound at all.
+            backend_domain = [
+                "|",
+                ("shopinvader_backend_id", "=", self.shopinvader_backend.id),
+                ("shopinvader_backend_id", "=", False),
+            ]
+        return (
+            self._default_domain_for_partner_records(with_backend=not show_all)
+            + [
+                ("typology", "=", "quotation"),
+            ]
+            + backend_domain
+        )
 
     def _confirm(self, order):
+        # If user can see all quotations, bind the order to current backend if not set yet.
+        show_all = self.shopinvader_backend.quotation_expose_all
+        if show_all and not order.shopinvader_backend_id:
+            order = order.with_context(_skip_cart_check=True)
+            order.shopinvader_backend_id = self.shopinvader_backend
         return order.action_confirm_cart()

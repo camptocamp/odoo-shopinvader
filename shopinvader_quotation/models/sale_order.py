@@ -39,15 +39,27 @@ class SaleOrder(models.Model):
         return super()._get_shopinvader_state()
 
     def action_request_quotation(self):
-        if any(rec.state != "draft" or rec.typology != "cart" for rec in self):
-            raise UserError(
-                _(
-                    "Only orders of cart typology in draft state "
-                    "can be converted to quotation"
-                )
-            )
         for rec in self:
+            if rec.shopinvader_backend_id:
+                if rec.typology != "cart" and not rec.env.context.get(
+                    "_skip_cart_check"
+                ):
+                    raise UserError(
+                        _(
+                            "Only orders of cart typology in draft state "
+                            "can be converted to quotation"
+                        )
+                    )
             rec.typology = "quotation"
             if rec.shopinvader_backend_id:
                 rec.shopinvader_backend_id._send_notification("quotation_request", rec)
         return True
+
+    def write(self, vals):
+        # Set the typology to "quotation" when the quotation is sent.
+        # Normally there are two cases where this happens:
+        # * When the :meth:`action_quotation_sent` is called.
+        # * When a message is posted with context `mark_so_as_sent=True`.
+        if vals.get("state") == "sent":
+            vals["typology"] = "quotation"
+        return super().write(vals)

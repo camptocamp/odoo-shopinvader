@@ -61,3 +61,9 @@ class TestShopinvaderImage(TestShopinvaderImageCase):
             # recomputed
             self.assertEqual(variant.images, [{"c": 3, "d": 4}])
             mocked.assert_called()
+
+        # Simulate base URL change
+        self.assertFalse(variant._images_must_recompute())
+        random_image = variant.variant_image_ids[0].image_id
+        random_image.backend_id.base_url_for_files = "https://foo.com"
+        self.assertTrue(variant._images_must_recompute())

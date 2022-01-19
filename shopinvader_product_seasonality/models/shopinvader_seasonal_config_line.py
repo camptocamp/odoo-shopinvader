@@ -56,14 +56,25 @@ class ShopinvaderSeasonalConfigLine(models.Model):
 
     @api.depends(lambda self: self._compute_weekdays_depends())
     def _compute_weekdays(self):
+        """Compute the list of weekdays as a list of integers
+
+        The result is a list of zero-based numbers for each applicable weekday.
+
+        Example result:
+
+            .. code-block:: python
+
+            # 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            [1, 2, 3, 4, 5]
+        """
         weekday_fields = [
+            "sunday",
             "monday",
             "tuesday",
             "wednesday",
             "thursday",
             "friday",
             "saturday",
-            "sunday",
         ]
         values = {x["id"]: x for x in self.read(weekday_fields)}
         for rec in self:

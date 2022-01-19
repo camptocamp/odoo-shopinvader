@@ -67,15 +67,15 @@ class TestProductSeasonalityCase(
         )
 
     def test_weekdays(self):
-        self.assertEqual(self.s_line1.weekdays, [0, 1, 2])
-        self.assertEqual(self.s_line2.weekdays, [3, 4, 5, 6])
+        self.assertEqual(self.s_line1.weekdays, [1, 2, 3])
+        self.assertEqual(self.s_line2.weekdays, [0, 4, 5, 6])
         self.line1.with_context(foo=1).write(
             {
                 "monday": False,
                 "saturday": True,
             }
         )
-        self.assertEqual(self.s_line1.weekdays, [1, 2, 5])
+        self.assertEqual(self.s_line1.weekdays, [2, 3, 6])
 
     def test_shop_data(self):
         # NOTE: if this test fails locally when running tests for the 2nd time
@@ -89,7 +89,7 @@ class TestProductSeasonalityCase(
             "product_ids": list(self.line1.product_template_id.product_variant_ids.ids),
             "date_start": "2021-05-10T02:00:00+02:00",
             "date_end": "2021-05-16T02:00:00+02:00",
-            "weekdays": [0, 1, 2],
+            "weekdays": [1, 2, 3],
         }
         for k, v in expected.items():
             self.assertEqual(data[k], v, f"`{k}` does not match `f{v}`")
@@ -101,7 +101,7 @@ class TestProductSeasonalityCase(
             "product_ids": list(self.line2.product_template_id.product_variant_ids.ids),
             "date_start": "2021-05-12T02:00:00+02:00",
             "date_end": "2021-05-23T02:00:00+02:00",
-            "weekdays": [3, 4, 5, 6],
+            "weekdays": [0, 4, 5, 6],
         }
         for k, v in expected.items():
             self.assertEqual(data[k], v, f"`{k}` does not match `f{v}`")
@@ -150,10 +150,10 @@ class TestProductSeasonalityCase(
         #     "product_ids": list(self.line2.product_template_id.product_variant_ids.ids),
         #     "date_start": "2021-05-12T02:00:00+02:00",
         #     "date_end": "2021-05-23T02:00:00+02:00",
-        #     "weekdays": [3, 4, 5, 6],
+        #     "weekdays": [0, 4, 5, 6],
         # }
         data = self.s_line2.get_shop_data()
-        self.assertEqual(data["weekdays"], [3, 4, 5, 6])
+        self.assertEqual(data["weekdays"], [0, 4, 5, 6])
 
     def test_bind_all_existing(self):
         line = self.config_line_model.create(

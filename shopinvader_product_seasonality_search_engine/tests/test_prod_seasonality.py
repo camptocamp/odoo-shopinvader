@@ -72,10 +72,10 @@ class TestProductSeasonalityCaseNoJobs(TestProductSeasonalityCaseBase):
             "id": s_line.id,
             "objectID": s_line.record_id.id,
             "product_ids": [s_line.product_id.id],
-            "weekdays": [2, 3, 4, 5, 6],
+            "weekdays": [0, 3, 4, 5, 6],
         }
         self.assertEqual(s_line.get_shop_data(), expected)
         # change value
         s_line.monday = True
-        expected["weekdays"] = [0, 2, 3, 4, 5, 6]
+        expected["weekdays"] = [0, 1, 3, 4, 5, 6]
         self.assertEqual(s_line.get_shop_data(), expected)

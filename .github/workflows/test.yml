@@ -46,9 +46,19 @@ jobs:
       - name: Install addons and dependencies
         run: oca_install_addons
       - name: Check licenses
-        run: manifestoo -d . check-licenses
+        run: |
+          if [ -n "$INCLUDE" ]
+          then manifestoo --select-include "$INCLUDE" check-licenses
+          else manifestoo -d . --select-exclude "$EXCLUDE" check-licenses
+          fi
+
       - name: Check development status
-        run: manifestoo -d . check-dev-status --default-dev-status=Beta
+        run: |
+          if [ -n "$INCLUDE" ]
+          then manifestoo --select-include "$INCLUDE" check-dev-status --default-dev-status=Beta
+          else manifestoo -d . --select-exclude "$EXCLUDE" check-dev-status --default-dev-status=Beta
+          fi
+
         continue-on-error: true
       - name: Initialize test db
         run: oca_init_test_database

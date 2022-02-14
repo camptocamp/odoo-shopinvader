@@ -50,19 +50,34 @@ class ShopinvaderImageMixin(models.AbstractModel):
         return self.backend_id[self._resize_scales_field]
 
     def _get_images_store_hash(self):
+        self.ensure_one()
         return str(hash(self._get_images_store_hash_tuple()))
+
+    def _get_images_store_hash_timestamp(self):
+        """Get the timestamp of the last modification of the images
+
+        This also includes the last modification of their relation or tags records
+
+        :return: datetime
+        """
+        images_relation = self[self._image_field]
+        timestamps = [
+            *images_relation.mapped("write_date"),
+            *images_relation.mapped("image_id.write_date"),
+        ]
+        if "tag_id" in images_relation._fields:
+            timestamps += images_relation.mapped("tag_id.write_date")
+        return max(timestamps) if timestamps else False
 
     def _get_images_store_hash_tuple(self):
         resize_scales = tuple(
             self._resize_scales().mapped(lambda r: (r.key, r.size_x, r.size_y))
         )
-        images_timestamp = self[self._image_field].mapped("image_id.write_date")
-        # fmt: off
+        timestamp = self._get_images_store_hash_timestamp()
         # FIXME: may vary by _get_image_url_key -> is this needed for real?
-        url_key = (self.display_name, )
-        # fmt: on
+        url_key = self.display_name
         # TODO: any other bit to consider here?
-        return resize_scales + tuple(images_timestamp) + url_key
+        return resize_scales + (timestamp, url_key)
 
     def _get_image_url_key(self, image_relation):
         # You can inherit this method to change the name of the image of

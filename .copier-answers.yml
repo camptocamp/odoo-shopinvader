@@ -6,5 +6,6 @@ generate_requirements_txt: true
 odoo_version: '14.0'
 prettify_xml: true
 python_line_length: 88
-rebel_module_groups: []
+rebel_module_groups:
+- shopinvader_l10n_fr
 repo_slug: odoo-shopinvader

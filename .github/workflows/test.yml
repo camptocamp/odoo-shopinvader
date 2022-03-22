@@ -17,8 +17,15 @@ jobs:
       matrix:
         include:
           - container: ghcr.io/oca/oca-ci/py3.6-odoo14.0:latest
+            include: "shopinvader_l10n_fr"
             makepot: "true"
           - container: ghcr.io/oca/oca-ci/py3.6-ocb14.0:latest
+            include: "shopinvader_l10n_fr"
+          - container: ghcr.io/oca/oca-ci/py3.6-odoo14.0:latest
+            exclude: "shopinvader_l10n_fr"
+            makepot: "true"
+          - container: ghcr.io/oca/oca-ci/py3.6-ocb14.0:latest
+            exclude: "shopinvader_l10n_fr"
     services:
       postgres:
         image: postgres:9.6
@@ -30,6 +37,8 @@ jobs:
           - 5432:5432
     env:
       PIP_EXTRA_INDEX_URL: "https://wheelhouse.shopinvader.com/simple/"
+      INCLUDE: "${{ matrix.include }}"
+      EXCLUDE: "${{ matrix.exclude }}"
     steps:
       - uses: actions/checkout@v2
         with:
@@ -37,9 +46,19 @@ jobs:
       - name: Install addons and dependencies
         run: oca_install_addons
       - name: Check licenses
-        run: manifestoo -d . check-licenses
+        run: |
+          if [ -n "$INCLUDE" ]
+          then manifestoo --select-include "$INCLUDE" check-licenses
+          else manifestoo -d . --select-exclude "$EXCLUDE" check-licenses
+          fi
+
       - name: Check development status
-        run: manifestoo -d . check-dev-status --default-dev-status=Beta
+        run: |
+          if [ -n "$INCLUDE" ]
+          then manifestoo --select-include "$INCLUDE" check-dev-status --default-dev-status=Beta
+          else manifestoo -d . --select-exclude "$EXCLUDE" check-dev-status --default-dev-status=Beta
+          fi
+
         continue-on-error: true
       - name: Initialize test db
         run: oca_init_test_database

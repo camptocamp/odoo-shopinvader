@@ -16,6 +16,9 @@
         "jsonify_stored",
     ],
     "data": [
+        "data/queue_job.xml",
+        "views/shopinvader_backend_view.xml",
+        "views/shopinvader_category_view.xml",
         "views/shopinvader_variant_view.xml",
     ],
     "pre_init_hook": "pre_init_hook",

@@ -80,9 +80,14 @@
                                     placeholder="e.g. https://ecommerce.shopinvader.com"
                                 />
                                 <field name="website_unique_key" />
+                                <field name="frontend_data_source" />
                             </group>
                         </page>
-                        <page name="search_eng" string="Search engine">
+                        <page
+                            name="search_eng"
+                            string="Search engine"
+                            attrs="{'invisible': [('frontend_data_source', '!=', 'search_engine')]}"
+                        >
                             <group name="website_name">
                                 <field name="website_public_name" />
                             </group>

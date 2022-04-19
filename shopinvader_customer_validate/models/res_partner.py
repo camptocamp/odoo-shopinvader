@@ -16,7 +16,6 @@ class ResPartner(models.Model):
     # but addresses are not bound to a backend.
     is_shopinvader_active = fields.Boolean(default=False)
     has_shopinvader_user_active = fields.Boolean(
-        help="This partner has at least a Shopinvader active user.",
         compute="_compute_has_shopinvader_user",
         compute_sudo=True,
         store=True,

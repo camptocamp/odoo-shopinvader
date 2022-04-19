@@ -43,6 +43,9 @@ class ResPartner(models.Model):
         compute_sudo=True,
         store=True,
     )
+    has_shopinvader_user_active = fields.Boolean(
+        help="This partner has at least a Shopinvader active user.",
+    )
     parent_has_shopinvader_user = fields.Boolean(
         related="parent_id.has_shopinvader_user",
         string="Parent Has Shopinvader User",
@@ -54,6 +57,37 @@ class ResPartner(models.Model):
     def _is_partner_duplicate_prevented(self):
         get_param = self.env["ir.config_parameter"].sudo().get_param
         return str2bool(get_param("shopinvader.no_partner_duplicate"))
+
+    @api.constrains("email", "has_shopinvader_user_active")
+    def _check_unique_email(self):
+        if not self._is_partner_duplicate_prevented():
+            return True
+        self.env["res.partner"].flush(["email", "has_shopinvader_user_active"])
+        self.env.cr.execute(
+            """
+            SELECT
+                email
+            FROM (
+                SELECT
+                    id,
+                    email,
+                    ROW_NUMBER() OVER (PARTITION BY email) AS Row
+                FROM
+                    res_partner
+                WHERE email is not null
+                    and active = True
+                    and has_shopinvader_user_active = True
+                ) dups
+            WHERE dups.Row > 1;
+        """
+        )
+        duplicate_emails = {r[0] for r in self.env.cr.fetchall()}
+        invalid_emails = [e for e in self.mapped("email") if e in duplicate_emails]
+        if invalid_emails:
+            raise ValidationError(
+                _("Email must be unique: The following " "mails are not unique: %s")
+                % ", ".join(invalid_emails)
+            )
 
     @api.depends("is_blacklisted")
     def _compute_opt_in(self):
@@ -80,34 +114,6 @@ class ResPartner(models.Model):
                 partner.address_type = "address"
             else:
                 partner.address_type = "profile"
-
-    @api.constrains("email")
-    def _check_unique_email(self):
-        if not self._is_partner_duplicate_prevented():
-            return True
-        self.env.cr.execute(
-            """
-            SELECT
-                email
-            FROM (
-                SELECT
-                    id,
-                    email,
-                    ROW_NUMBER() OVER (PARTITION BY email) AS Row
-                FROM
-                    res_partner
-                WHERE email is not null and active = True
-                ) dups
-            WHERE dups.Row > 1;
-        """
-        )
-        duplicate_emails = {r[0] for r in self.env.cr.fetchall()}
-        invalid_emails = [e for e in self.mapped("email") if e in duplicate_emails]
-        if invalid_emails:
-            raise ValidationError(
-                _("Email must be unique: The following " "mails are not unique: %s")
-                % ", ".join(invalid_emails)
-            )
 
     def write(self, vals):
         super(ResPartner, self).write(vals)

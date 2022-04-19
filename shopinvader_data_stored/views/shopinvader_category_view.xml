@@ -31,7 +31,7 @@ env["jsonify.stored.mixin"].jobify_json_data_compute_for(bindings.browse(), ids=
     </field>
 </record>
 
-<record model="ir.actions.server" id="action_recompute_shopinvader_product_on_binding">
+<record model="ir.actions.server" id="action_recompute_shopinvader_category_on_binding">
     <field name="name">Recompute JSON data</field>
     <field name="model_id" ref="shopinvader.model_shopinvader_category" />
     <field name="binding_model_id" ref="shopinvader.model_shopinvader_category" />

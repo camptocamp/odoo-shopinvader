@@ -7,3 +7,10 @@ vcrpy
 vcrpy-unittest
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+odoo14-addon-jsonifier_stored @ git+https://github.com/OCA/server-tools.git@refs/pull/2324/head#subdirectory=setup/jsonifier_stored
+odoo14-addon-shopinvader @ git+https://github.com/shopinvader/odoo-shopinvader.git@refs/pull/1277/head#subdirectory=setup/shopinvader
+odoo14-addon-shopinvader_auth_api_key @ git+https://github.com/shopinvader/odoo-shopinvader.git@refs/pull/1277/head#subdirectory=setup/shopinvader_auth_api_key
+odoo14-addon-shopinvader_auth_jwt @ git+https://github.com/shopinvader/odoo-shopinvader.git@refs/pull/1277/head#subdirectory=setup/shopinvader_auth_jwt
+odoo14-addon-shopinvader_locomotive @ git+https://github.com/shopinvader/odoo-shopinvader.git@refs/pull/1277/head#subdirectory=setup/shopinvader_locomotive
+odoo14-addon-shopinvader_locomotive_reset_password @ git+https://github.com/shopinvader/odoo-shopinvader.git@refs/pull/1277/head#subdirectory=setup/shopinvader_locomotive_reset_password

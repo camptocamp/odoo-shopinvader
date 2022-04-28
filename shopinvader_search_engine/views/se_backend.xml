@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="sse_backend_form_view" model="ir.ui.view">
+        <field name="model">se.backend</field>
+        <field name="inherit_id" ref="connector_search_engine.se_backend_form_view" />
+        <field name="arch" type="xml">
+            <field name="specific_backend" position="after">
+                <field name="linked_shops_ids" invisible="1" />
+                <field
+                    name="primary_webshop_id"
+                    colspan="2"
+                    domain="[('id', 'in', linked_shops_ids)]"
+                    options="{'no_create': True}"
+                />
+            </field>
+        </field>
+    </record>
+
+</odoo>

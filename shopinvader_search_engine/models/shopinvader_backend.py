@@ -20,11 +20,27 @@ class ShopinvaderBackend(models.Model):
         help="Search Engine backend configuration to use",
     )
     index_ids = fields.One2many("se.index", related="se_backend_id.index_ids")
+    is_secondary_searchengine = fields.Boolean(
+        compute="_compute_secondary_searchengine",
+    )
 
     @api.model
     def _get_default_models(self):
         domain = self.env["se.index"]._model_id_domain()
         return self.env["ir.model"].search(domain)
+
+    @api.depends("se_backend_id")
+    def _compute_secondary_searchengine(self):
+        for rec in self:
+            rec.is_secondary_searchengine = (
+                self.search_count(
+                    [
+                        ("se_backend_id", "=", rec.se_backend_id.id),
+                        ("se_backend_id.primary_webshop_id", "!=", rec.id),
+                    ]
+                )
+                >= 1
+            )
 
     def force_recompute_all_binding_index(self):
         self.sudo_tech().mapped("se_backend_id.index_ids").force_recompute_all_binding()

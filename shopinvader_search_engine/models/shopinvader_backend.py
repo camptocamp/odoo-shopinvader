@@ -36,7 +36,7 @@ class ShopinvaderBackend(models.Model):
                 self.search_count(
                     [
                         ("se_backend_id", "=", rec.se_backend_id.id),
-                        ("se_backend_id.primary_webshop_id", "!=", self.id),
+                        ("se_backend_id.primary_webshop_id", "!=", rec.id),
                     ]
                 )
                 >= 1

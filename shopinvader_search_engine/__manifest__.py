@@ -17,6 +17,7 @@
         "base_technical_user",
     ],
     "data": [
+        "views/se_backend.xml",
         "views/shopinvader_backend_view.xml",
         "views/shopinvader_variant_view.xml",
         "views/shopinvader_category_view.xml",

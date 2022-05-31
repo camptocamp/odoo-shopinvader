@@ -73,8 +73,13 @@ class ResPartner(models.Model):
                     res_partner rp
                 WHERE rp.email is not null
                     and rp.active = True
-                    and EXISTS (SELECT FROM shopinvader_partner sp WHERE sp.record_id = rp.id)
+                    and EXISTS (
+                        SELECT FROM shopinvader_partner sp
+                        WHERE sp.record_id = rp.id
+                    )
+                    and rp.is_shopinvader_active
                 ) dups
+
             WHERE dups.Row > 1;
         """
         )

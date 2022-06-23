@@ -55,7 +55,7 @@ class AbstractSaleService(AbstractComponent):
             # this likely should never happen if the request from client
             # is forwarded properly
             variant = line.product_id._get_invader_variant(
-                self.shopinvader_backend, line.order_id.partner_id.lang
+                self.shopinvader_backend, line.order_id.partner_id.lang, True
             )
         product = self._convert_one_line_product(variant)
         return {

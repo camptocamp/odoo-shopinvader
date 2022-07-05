@@ -57,6 +57,14 @@ class AbstractSaleService(AbstractComponent):
             variant = line.product_id._get_invader_variant(
                 self.shopinvader_backend, line.order_id.partner_id.lang
             )
+        if not variant:
+            # we will only land here if the language
+            # still doesn't match a variant, in which case
+            # we will resort to the lang of the backend
+            backend_lang = line.product_id.shopinvader_bind_ids.filtered(lambda x: x.backend_id == self.shopinvader_backend).lang_id.code
+            variant = line.product_id._get_invader_variant(
+                self.shopinvader_backend, backend_lang
+            )
         product = self._convert_one_line_product(variant)
         return {
             "id": line.id,

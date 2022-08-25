@@ -208,6 +208,7 @@ class ShopinvaderBackend(models.Model):
     )
     website_unique_key = fields.Char(
         required=True,
+        copy=False,
         help="This identifier should be provided by each REST request through "
         "a WEBSITE-UNIQUE-KEY http header to identify the target backend. "
         "If not provided by the request, you must pu in place a way to"

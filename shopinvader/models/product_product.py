@@ -2,8 +2,11 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+import logging
+
 from odoo import api, fields, models
 
+_logger = logging.getLogger(__name__)
 
 class ProductProduct(models.Model):
     _inherit = "product.product"
@@ -59,12 +62,26 @@ class ProductProduct(models.Model):
             self.shopinvader_bind_ids.filtered(lambda x: x.backend_id == backend)
         )
 
-    def _get_invader_variant(self, backend, lang):
+    def _get_invader_variant(self, backend, lang, safe_default = False):
         """Retrieve invader variant by backend and language.
 
         :param backend: backend recordset
         :param lang: lang code
+        :param safe_default: true to fallback to backend lang 
         """
+        variant = self._find_variant(backend, lang)
+        if not variant and safe_default:
+            lang = self.shopinvader_bind_ids.filtered(
+                lambda x: x.backend_id == backend).lang_id[0].code
+            _logger.debug(
+                "Falling back to the first lang of the shopinvader backend: `%s",
+                lang,
+            )
+
+            variant = self._find_variant(backend, lang)
+        return variant
+
+    def _find_variant(self, backend, lang):
         return self.shopinvader_bind_ids.filtered(
             lambda x: x.backend_id == backend and x.lang_id.code == lang
         )

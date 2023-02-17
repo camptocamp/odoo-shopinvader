@@ -35,6 +35,7 @@ class ShopinvaderBackend(models.Model):
         "shopinvader.notification",
         "backend_id",
         "Notification",
+        help="Send mail for predefined events",
     )
     nbr_product = fields.Integer(
         compute="_compute_nbr_content", string="Number of bound products"
@@ -208,11 +209,11 @@ class ShopinvaderBackend(models.Model):
     )
     website_unique_key = fields.Char(
         required=True,
-        help="This identifier should be provided by each REST request through "
+        help="This identifier may be provided by each REST request through "
         "a WEBSITE-UNIQUE-KEY http header to identify the target backend. "
-        "If not provided by the request, you must pu in place a way to"
-        "lookup the target request for a given request by overriding the"
-        "method _get_backend into the service context provider component. "
+        "If not provided by the request and if there is only one backend, "
+        "it will be used by default. Otherwise it is possible to override the "
+        "_get_backend method into the service context provider component. "
         "The shopinvader_auth_api_key and shopinvader_auth_jwt addons "
         "provides a fallback mechanism in such a case.",
         default=lambda self: self._default_website_unique_key(),
@@ -448,11 +449,11 @@ class ShopinvaderBackend(models.Model):
             grouped_by_template = defaultdict(self.env["product.product"].browse)
             for rec in products:
                 grouped_by_template[rec.product_tmpl_id] |= rec
-            method = backend.with_delay().bind_single_product
-            if run_immediately:
-                method = backend.bind_single_product
             for tmpl, variants in grouped_by_template.items():
-                method(langs, tmpl, variants)
+                if run_immediately:
+                    backend.bind_single_product(langs, tmpl, variants)
+                else:
+                    backend.with_delay().bind_single_product(langs, tmpl, variants)
 
     def bind_single_product(self, langs, product_tmpl, variants):
         """Bind given product variants for given template and languages.

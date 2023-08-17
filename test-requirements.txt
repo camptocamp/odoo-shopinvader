@@ -7,3 +7,7 @@ vcrpy
 vcrpy-unittest
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+
+# DROPME
+odoo14-addon-product_sale_manufactured_for @ git+https://github.com/OCA/product-attribute@refs/pull/1400/head#subdirectory=setup/product_sale_manufactured_for

@@ -1,9 +1,5 @@
-# Copyright 2018 Akretion (http://www.akretion.com)
-# Copyright 2018 ACSONE SA/NV
-# Sébastien BEAU <sebastien.beau@akretion.com>
-# Copyright 2020 Camptocamp SA (http://www.camptocamp.com)
-# Simone Orsi <simahawk@gmail.com>
-# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+# Copyright 2023 ACSONE SA/NV
+# License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 import logging
 
 from odoo import fields, models
@@ -16,8 +12,9 @@ except (ImportError, IOError) as err:
     _logger.debug(err)
 
 
-class ShopinvaderBackend(models.Model):
-    _inherit = "shopinvader.backend"
+class SeIndex(models.Model):
+
+    _inherit = "se.index"
 
     warehouse_ids = fields.Many2many(
         "stock.warehouse",
@@ -60,9 +57,7 @@ class ShopinvaderBackend(models.Model):
         return self.env["stock.warehouse"].search([], limit=1)
 
     def _selection_stock_level_config(self):
-        return [
-            ("only_qty", "Only Quantity"),
-        ]
+        return [("only_qty", "Only Quantity")]
 
     def _get_warehouse_list_for_export(self):
         """Get list of warehouse to be used for exporting stock level.

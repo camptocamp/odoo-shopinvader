@@ -13,3 +13,6 @@ odoo-addon-shopinvader-product @ git+https://github.com/shopinvader/odoo-shopinv
 odoo-addon-sell-only-by-packaging @ git+https://github.com/OCA/sale-workflow@refs/pull/2623/head#subdirectory=setup/sell_only_by_packaging
 odoo-addon-product-packaging-level-salable @ git+https://github.com/OCA/product-attribute@refs/pull/1395/head#subdirectory=setup/product_packaging_level_salable
 odoo-addon-stock-packaging-calculator-packaging-level @ git+https://github.com/OCA/stock-logistics-warehouse@refs/pull/1860/head#subdirectory=setup/stock_packaging_calculator_packaging_level
+odoo-addon-sell-only-by-packaging @ git+https://github.com/OCA/sale-workflow@refs/pull/2623/head#subdirectory=setup/sell_only_by_packaging
+odoo-addon-stock-packaging-calculator-packaging-level @ git+https://github.com/OCA/stock-logistics-warehouse@refs/pull/1860/head#subdirectory=setup/stock_packaging_calculator_packaging_level
+odoo-addon-shopinvader-product-sale-packaging @ git+https://github.com/shopinvader/odoo-shopinvader@refs/pull/1415/head#subdirectory=setup/shopinvader_product_sale_packaging

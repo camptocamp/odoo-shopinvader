@@ -8,3 +8,6 @@ vcrpy-unittest
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
 httpx  # For FastAPI tests
+odoo-addon-sell-only-by-packaging @ git+https://github.com/OCA/sale-workflow@refs/pull/2623/head#subdirectory=setup/sell_only_by_packaging
+odoo-addon-stock-packaging-calculator-packaging-level @ git+https://github.com/OCA/stock-logistics-warehouse@refs/pull/1860/head#subdirectory=setup/stock_packaging_calculator_packaging_level
+odoo-addon-shopinvader-product-sale-packaging @ git+https://github.com/shopinvader/odoo-shopinvader@refs/pull/1415/head#subdirectory=setup/shopinvader_product_sale_packaging

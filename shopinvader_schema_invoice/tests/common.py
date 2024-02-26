@@ -38,7 +38,7 @@ class SchemaInvoiceCase(TransactionCase, ExtendableMixin):
 
 
 def create_invoice(
-    env, partner, product, inv_type="out_invoice", validate=False, **vals
+    env, partner, product, inv_type="out_invoice", validate=False, account=None, **vals
 ):
     """
     Create a new invoice
@@ -48,7 +48,7 @@ def create_invoice(
     :param validate: bool
     :return: account.move record
     """
-    account = product.categ_id.property_account_expense_categ_id
+    account = account or product.categ_id.property_account_expense_categ_id
     values = {
         "partner_id": partner.id,
         "partner_shipping_id": partner.id,

@@ -30,11 +30,29 @@ class TestInvoice(FastAPITransactionCase):
                 "list_price": 10.0,
             }
         )
+
+        cls.account_receivable = cls.env["account.account"].create(
+            {
+                "name": cls.partner.name,
+                "code": "tp",
+                "account_type": "asset_receivable",
+                "company_id": cls.env.company.id,
+                "reconcile": True,
+            }
+        )
         cls.bank_journal = cls.env["account.journal"].create(
             {"name": "Bank", "type": "bank", "code": "bank1"}
         )
+        cls.sale_journal = cls.env["account.journal"].create(
+            {"name": "Bank", "type": "sale", "code": "sale1"}
+        )
         cls.default_fastapi_authenticated_partner = cls.partner
         cls.default_fastapi_router = invoice_router
+
+    def _create_invoice(self, **kw):
+        return create_invoice(
+            self.env, self.partner, self.product, account=self.account_receivable, **kw
+        )
 
     def test_search_invoices_none(self):
         with self._create_test_client() as test_client:
@@ -44,7 +62,7 @@ class TestInvoice(FastAPITransactionCase):
 
     def test_search_invoices_not_ready(self):
         for __ in range(3):
-            create_invoice(self.env, self.partner, self.product)
+            self._create_invoice()
         with self._create_test_client() as test_client:
             response: Response = test_client.get("/invoices")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -53,9 +71,21 @@ class TestInvoice(FastAPITransactionCase):
 
     def test_search_invoices_ok(self):
         for i in range(3):
-            create_invoice(self.env, self.partner, self.product, validate=i != 2)
+            self._create_invoice(validate=i != 2)
         with self._create_test_client() as test_client:
             response: Response = test_client.get("/invoices")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # 2 validated out of 3
         self.assertEqual(response.json()["count"], 2)
+
+    def test_download(self):
+        inv1 = self._create_invoice()
+        with self._create_test_client() as test_client:
+            response: Response = test_client.get(f"/invoices/{inv1.id}/download")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.headers["Content-Type"], "application/pdf")
+        inv2 = self._create_invoice()
+        with self._create_test_client() as test_client:
+            response: Response = test_client.get(f"/invoices/{inv2.id}/download")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.headers["Content-Type"], "application/pdf")

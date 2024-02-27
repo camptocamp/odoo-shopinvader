@@ -8,44 +8,20 @@ from requests import Response
 from odoo.tests.common import tagged
 
 from odoo.addons.extendable_fastapi.tests.common import FastAPITransactionCase
-from odoo.addons.shopinvader_schema_invoice.tests.common import create_invoice
+from odoo.addons.shopinvader_schema_invoice.tests.common import (
+    InvoiceCaseMixin,
+    create_invoice,
+)
 
 from ..routers import invoice_router
 
 
 @tagged("post_install", "-at_install")
-class TestInvoice(FastAPITransactionCase):
+class TestInvoice(FastAPITransactionCase, InvoiceCaseMixin):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
-        cls.partner = cls.env["res.partner"].create(
-            {
-                "name": "Test Partner",
-                "email": "test@test.eu",
-            }
-        )
-        cls.product = cls.env["product.product"].create(
-            {
-                "name": "Test Product",
-                "list_price": 10.0,
-            }
-        )
-
-        cls.account_receivable = cls.env["account.account"].create(
-            {
-                "name": cls.partner.name,
-                "code": "tp",
-                "account_type": "asset_receivable",
-                "company_id": cls.env.company.id,
-                "reconcile": True,
-            }
-        )
-        cls.bank_journal = cls.env["account.journal"].create(
-            {"name": "Bank", "type": "bank", "code": "bank1"}
-        )
-        cls.sale_journal = cls.env["account.journal"].create(
-            {"name": "Bank", "type": "sale", "code": "sale1"}
-        )
+        cls._setup_invoice_data()
         cls.default_fastapi_authenticated_partner = cls.partner
         cls.default_fastapi_router = invoice_router
 

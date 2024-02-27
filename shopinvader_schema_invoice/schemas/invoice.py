@@ -1,12 +1,27 @@
 # Copyright 2023 Camptocamp SA
 # @author: Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
-
 from datetime import date
+from enum import Enum
 
 from extendable_pydantic import StrictExtendableBaseModel
 
 from .amount import InvoiceAmount
+
+
+class InvoiceState(Enum):
+    draft = "draft"
+    posted = "posted"
+    cancel = "cancel"
+
+
+class InvoicePaymentState(Enum):
+    not_paid = "not_paid"
+    in_payment = "in_payment"
+    paid = "paid"
+    partial = "partial"
+    reversed = "reversed"
+    invoicing_legacy = "invoicing_legacy"
 
 
 class Invoice(StrictExtendableBaseModel, extra="ignore"):
@@ -14,8 +29,8 @@ class Invoice(StrictExtendableBaseModel, extra="ignore"):
     name: str
     date_invoice: date
     date_due: date | None = None
-    state: str
-    payment_state: str
+    state: InvoiceState
+    payment_state: InvoicePaymentState
     ref: str | str
     payment_reference: str | str
     amount: InvoiceAmount | None

@@ -9,13 +9,9 @@ from odoo.tests.common import TransactionCase
 from odoo.addons.extendable.tests.common import ExtendableMixin
 
 
-class SchemaInvoiceCase(TransactionCase, ExtendableMixin):
+class InvoiceCaseMixin:
     @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
-        cls.init_extendable_registry()
-        cls.addClassCleanup(cls.reset_extendable_registry)
+    def _setup_invoice_data(cls):
         cls.partner = cls.env["res.partner"].create(
             {
                 "name": "Test Partner",
@@ -29,8 +25,33 @@ class SchemaInvoiceCase(TransactionCase, ExtendableMixin):
             }
         )
         cls.bank_journal = cls.env["account.journal"].create(
+            {"name": "Bank", "type": "bank", "code": "testbank1"}
+        )
+        cls.account_receivable = cls.env["account.account"].create(
+            {
+                "name": "test receive",
+                "code": "testreceive",
+                "account_type": "asset_receivable",
+                "company_id": cls.env.company.id,
+                "reconcile": True,
+            }
+        )
+        cls.bank_journal = cls.env["account.journal"].create(
             {"name": "Bank", "type": "bank", "code": "bank1"}
         )
+        cls.sale_journal = cls.env["account.journal"].create(
+            {"name": "Bank", "type": "sale", "code": "sale1"}
+        )
+
+
+class SchemaInvoiceCase(TransactionCase, ExtendableMixin, InvoiceCaseMixin):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.env = cls.env(context=dict(cls.env.context, tracking_disable=True))
+        cls.init_extendable_registry()
+        cls.addClassCleanup(cls.reset_extendable_registry)
+        cls._setup_invoice_data()
 
 
 # ripped out of shopinvader_invoice and refactored into reusable methods

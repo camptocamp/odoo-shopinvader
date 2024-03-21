@@ -146,14 +146,14 @@ class ShopinvaderApiCartRouterHelper(models.AbstractModel):
         ):
             return (2, cart_line.id, None)
         vals = {"product_uom_qty": new_qty}
-        vals = self._apply_transactions_on_existing_cart_line_prepare_vals(
+        vals = self._apply_transactions_on_existing_cart_line__post(
             cart_line, transactions, vals
         )
         vals.update(cart_line._play_onchanges_cart_line(vals))
         return (1, cart_line.id, vals)
 
     @api.model
-    def _apply_transactions_on_existing_cart_line_prepare_vals(
+    def _apply_transactions_on_existing_cart_line__post(
         self,
         line: SaleOrderLine,
         transactions: list[CartTransaction],
@@ -176,7 +176,7 @@ class ShopinvaderApiCartRouterHelper(models.AbstractModel):
             cart=cart, transactions=transactions
         )
         if vals:
-            vals = self._apply_transactions_creating_new_cart_line_prepare_vals(
+            vals = self._apply_transactions_creating_new_cart_line__post(
                 cart, transactions, vals
             )
             vals.update(self.env["sale.order.line"]._play_onchanges_cart_line(vals))
@@ -184,7 +184,7 @@ class ShopinvaderApiCartRouterHelper(models.AbstractModel):
         return None
 
     @api.model
-    def _apply_transactions_creating_new_cart_line_prepare_vals(
+    def _apply_transactions_creating_new_cart_line__post(
         self, cart: SaleOrder, transactions: list[CartTransaction], values: dict
     ):
         """Post hook allowing to add custom values in cart lines to be created.

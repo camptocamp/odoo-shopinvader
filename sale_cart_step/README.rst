@@ -40,7 +40,6 @@ If you spotted it first, help us to smash it by providing a detailed and welcome
 Do not contact contributors directly about support or help with technical issues.
 
 Credits
-=======
 
 Authors
 ~~~~~~~
@@ -58,3 +57,5 @@ Maintainers
 This module is part of the `shopinvader/odoo-shopinvader <https://github.com/shopinvader/odoo-shopinvader/tree/16.0/sale_cart_step>`_ project on GitHub.
 
 You are welcome to contribute.
+=======
+bot pls :)

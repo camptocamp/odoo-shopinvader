@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ====================================
 Sale Cart steps cart API integration
 ====================================
@@ -58,3 +59,6 @@ Maintainers
 This module is part of the `shopinvader/odoo-shopinvader <https://github.com/shopinvader/odoo-shopinvader/tree/16.0/shopinvader_api_cart_step>`_ project on GitHub.
 
 You are welcome to contribute.
+=======
+bot pls :)
+>>>>>>> Add shopinvader_api_cart_step

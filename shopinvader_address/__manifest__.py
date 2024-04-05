@@ -12,6 +12,5 @@
     "depends": [
         "sale",
     ],
-    "data": [],
-    "demo": [],
+    "data": ["views/res_config_settings.xml"],
 }

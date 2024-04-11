@@ -19,8 +19,17 @@ class ProductMediaCase(SavepointCase, Mixin):
         cls.media1 = cls._create_storage_media("test-media.pdf")
         cls.media2 = cls._create_storage_media("test-media.txt")
         cls.media3 = cls._create_storage_media("test-media.csv")
+        cls.s_product = cls.env["shopinvader.product"].create(
+            {
+                "record_id": cls.template.id,
+                "lang_id": cls.env.ref("base.lang_en").id
+            }
+        )
         cls.s_variant = cls.env["shopinvader.variant"].create(
-            {"record_id": cls.product_a.id}
+            {
+                "record_id": cls.product_a.id,
+                "shopinvader_product_id": cls.s_product.id
+            }
         )
 
     # FIXME

@@ -1,4 +1,6 @@
 # Copyright 2022 ACSONE SA/NV
+# Copyright 2024 Camptocamp (http://www.camptocamp.com).
+# @author Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 from collections import OrderedDict
 from typing import Annotated
@@ -52,6 +54,22 @@ def sync(
     cart = env["sale.order"]._find_open_cart(partner.id, str(uuid) if uuid else None)
     cart = env["shopinvader_api_cart.cart_router.helper"]._sync_cart(
         partner, cart, str(uuid) if uuid else None, data.transactions
+    )
+    return Sale.from_sale_order(cart) if cart else Response(status_code=204)
+
+
+@cart_router.post("/new", status_code=201)
+def new(
+    data: CartSyncInput,
+    env: Annotated[api.Environment, Depends(authenticated_partner_env)],
+    partner: Annotated["ResPartner", Depends(authenticated_partner)],
+) -> Sale | None:
+    """Create a new cart on demand.
+
+    You can use this endpoint to create multiple carts for the same customer.
+    """
+    cart = env["shopinvader_api_cart.cart_router.helper"]._sync_cart(
+        partner, None, None, data.transactions
     )
     return Sale.from_sale_order(cart) if cart else Response(status_code=204)
 

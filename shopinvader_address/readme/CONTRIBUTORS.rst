@@ -2,3 +2,4 @@
 * Marie Lejeune <marie.lejeune@acsone.eu>
 * Stéphane Bidoul <stephane.bidoul@acsone.eu>
 * Zina Rasoamanana <zina.rasoamanana@acsone.eu>
+* Simone Orsi <simone.orsi@camptocamp.com>

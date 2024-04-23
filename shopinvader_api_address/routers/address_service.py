@@ -66,10 +66,8 @@ def create_invoicing_address(
     Create invoicing address
     Raise error since invoicing address is the authenticated partner
     """
-    helper = env["shopinvader_api_address.address_router.helper"].new(
-        {"partner": partner}
-    )
-    address = helper._create_address(data, "invoicing")
+    vals = data.to_res_partner_vals(partner.env)
+    address = partner._create_shopinvader_invoicing_address(vals)
     return InvoicingAddress.from_res_partner(address)
 
 
@@ -86,10 +84,13 @@ def update_invoicing_address(
     Update invoicing address of authenticated user
     invoicing address corresponds to authenticated partner
     """
-    helper = env["shopinvader_api_address.address_router.helper"].new(
-        {"partner": partner}
-    )
-    address = helper._update_address(data, "invoicing", address_id)
+    vals = data.to_res_partner_vals(partner, address_id)
+    # sudo() is needed because some addons override the write
+    # function of res.partner to do some checks before writing.
+    # These checks need more rights than what we are giving to
+    # the enspoint's user
+    # (e.g. snailmail/models/res_partner.py)
+    address = partner.sudo()._update_shopinvader_invoicing_address(vals, address_id)
     return InvoicingAddress.from_res_partner(address)
 
 
@@ -132,10 +133,9 @@ def create_delivery_address(
     """
     Create delivery address of authenticated user
     """
-    helper = env["shopinvader_api_address.address_router.helper"].new(
-        {"partner": partner}
-    )
-    address = helper._create_address(data, "delivery")
+    vals = data.to_res_partner_vals(partner.env)
+    address = partner._create_shopinvader_delivery_address(vals)
+
     return DeliveryAddress.from_res_partner(address)
 
 
@@ -149,10 +149,13 @@ def update_delivery_address(
     """
     Update delivery address of authenticated user
     """
-    helper = env["shopinvader_api_address.address_router.helper"].new(
-        {"partner": partner}
-    )
-    address = helper._update_address(data, "delivery", address_id)
+    vals = data.to_res_partner_vals(partner, address_id)
+    # sudo() is needed because some addons override the write
+    # function of res.partner to do some checks before writing.
+    # These checks need more rights than what we are giving to
+    # the enspoint's user
+    # (e.g. snailmail/models/res_partner.py)
+    address = partner.sudo()._update_shopinvader_delivery_address(vals, address_id)
     return DeliveryAddress.from_res_partner(address)
 
 

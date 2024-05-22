@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+          <div id="connectors_setting_container" position="after">
+            <h2 class="mt32">Shopinvader</h2>
+            <div
+                    class="row mt16 o_settings_container"
+                    id="shopinvader_settings_container"
+                >
+                <div
+                        class="col-12 col-lg-6 o_setting_box"
+                        id="shopinvader_invoice_address_update"
+                    >
+                    <div class="o_setting_left_pane">
+                        <field name="shopinvader_allow_so_invoice_address_update" />
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="shopinvader_allow_so_invoice_address_update" />
+                        <div class="text-muted">
+                          If checked, it will allow to modify the invoice address of confirmed sale orders.
+                        </div>
+                    </div>
+                </div>
+                <div
+                        class="col-12 col-lg-6 o_setting_box"
+                        id="shopinvader_delivery_address_update"
+                    >
+                    <div class="o_setting_left_pane">
+                        <field name="shopinvader_allow_so_delivery_address_update" />
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="shopinvader_allow_so_delivery_address_update" />
+                        <div class="text-muted">
+                          If checked, it will allow to modify the delivery address of confirmed sale orders.
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </field>
+    </record>
+
+</odoo>

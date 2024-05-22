@@ -35,8 +35,11 @@ class Sale(BaseSale, extends=True):
             for card in odoo_rec.generated_coupon_ids
         ]
         # Get claimable rewards
-        odoo_rec._update_programs_and_rewards()
         claimable_rewards = odoo_rec._get_claimable_rewards()
+        if not odoo_rec.state == "done" and not claimable_rewards.items():
+            odoo_rec._update_programs_and_rewards()
+            claimable_rewards = odoo_rec._get_claimable_rewards()
+
         obj.claimable_rewards = []
         for _, rewards in claimable_rewards.items():
             obj.claimable_rewards += [

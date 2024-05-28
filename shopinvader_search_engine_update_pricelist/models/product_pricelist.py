@@ -9,10 +9,13 @@ class PricelistItem(models.Model):
     _inherit = ["product.pricelist.item", "se.product.update.mixin"]
 
     def get_products(self):
-        Product = self.env["product.product"]
-        return Product.search(self._se_get_product_domain())
+        Products = self.env["product.product"]
+        for item in self:
+            Products |= Products.search(item._se_get_product_domain())
+        return Products
 
     def _se_get_product_domain(self):
+        self.ensure_one()
         domain = []
         # TODO: confirm all-product case
         if self.applied_on == "3_global":

@@ -1,4 +1,6 @@
 # Copyright 2023 ACSONE SA/NV
+# Copyright 2024 Camptocamp (http://www.camptocamp.com).
+# @author Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from odoo import _, models
@@ -22,10 +24,12 @@ class ResPartner(models.Model):
                     ("partner_invoice_id", "=", self.id),
                     ("state", "in", ("done", "sale")),
                 ],
-                limit=1,
             )
         )
-        if len(sale_order) > 0:
+        if (
+            sale_order
+            and not sale_order.company_id.shopinvader_allow_so_invoice_address_update
+        ):
             raise UserError(
                 _(
                     "Can not update invoicing addresses(%(address_id)d)"
@@ -50,10 +54,13 @@ class ResPartner(models.Model):
                 limit=1,
             )
         )
-        if len(sale_order) > 0:
+        if (
+            sale_order
+            and not sale_order.company_id.shopinvader_allow_so_delivery_address_update
+        ):
             raise UserError(
                 _(
-                    "Can not delete Delivery address(%(address_id)d)"
+                    "Can not update Delivery address(%(address_id)d)"
                     "because it is already used on confirmed sale order",
                     address_id=self.id,
                 )

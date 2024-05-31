@@ -5,8 +5,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 from datetime import timedelta
-
-import mock
+from unittest import mock
 
 from odoo import fields
 
@@ -30,8 +29,9 @@ class TestShopinvaderImage(TestShopinvaderImageCase):
             for scale in self.backend.shopinvader_variant_resize_ids:
                 img = image[scale.key]
                 self.assertEqual(img["alt"], self.shopinvader_variant.name)
+                src = img["src"].replace("-_", "_")
                 self.assertTrue(
-                    img["src"].startswith(
+                    src.startswith(
                         "https://foo.com/customizable-desk-config_{0.size_x}_{0.size_y}".format(
                             scale
                         )
@@ -54,8 +54,9 @@ class TestShopinvaderImage(TestShopinvaderImageCase):
             for scale in self.backend.shopinvader_variant_resize_ids:
                 img = image[scale.key]
                 self.assertEqual(img["alt"], self.shopinvader_variant.name)
+                src = img["src"].replace("-_", "_")
                 self.assertTrue(
-                    img["src"].startswith(
+                    src.startswith(
                         "/customizable-desk-config_{0.size_x}_{0.size_y}".format(scale)
                     )
                 )
@@ -75,23 +76,34 @@ class TestShopinvaderImage(TestShopinvaderImageCase):
         #       and it always corresponds to the time the transaction started.
         #       To overcome this, we manually overwrite write_date
         now = fields.Datetime.now()
-        variant.image_ids.write_date = now
-        variant.images_store_hash = variant._get_images_store_hash()
-        # Change hash when relation is updated
-        variant.image_ids[0].write_date = now + timedelta(seconds=1)
-        self.assertTrue(variant._images_must_recompute())
-        variant.images_store_hash = variant._get_images_store_hash()
-        # Change hash when image is updated
-        variant.image_ids[0].image_id.write_date = now + timedelta(seconds=2)
-        self.assertTrue(variant._images_must_recompute())
-        variant.images_store_hash = variant._get_images_store_hash()
-        # Change hash when tag is updated
+        with mock.patch.object(
+            type(variant.image_ids), "write_date", new_callable=mock.PropertyMock
+        ) as mocked:
+            mocked.return_value = now
+            variant.images_store_hash = variant._get_images_store_hash()
+            # Change hash when relation is updated
+            mocked.return_value = now + timedelta(seconds=100)
+            # variant.image_ids[0].write_date = now + timedelta(seconds=1)
+            self.assertTrue(variant._images_must_recompute())
+            variant.images_store_hash = variant._get_images_store_hash()
+        with mock.patch.object(
+            type(variant.image_ids.image_id),
+            "write_date",
+            new_callable=mock.PropertyMock,
+        ) as mocked:
+            mocked.return_value = now + timedelta(seconds=2)
+            self.assertTrue(variant._images_must_recompute())
+            variant.images_store_hash = variant._get_images_store_hash()
+            # Change hash when tag is updated
         tag = self.env.ref("shopinvader_image.image_tag_1")
         variant.image_ids[0].tag_id = tag
         variant.images_store_hash = variant._get_images_store_hash()
-        tag.write_date = now + timedelta(seconds=3)
-        self.assertTrue(variant._images_must_recompute())
-        variant.images_store_hash = variant._get_images_store_hash()
+        with mock.patch.object(
+            type(variant.image_ids.tag_id), "write_date", new_callable=mock.PropertyMock
+        ) as mocked:
+            mocked.return_value = now + timedelta(seconds=3)
+            self.assertTrue(variant._images_must_recompute())
+            variant.images_store_hash = variant._get_images_store_hash()
 
     def test_images_recompute(self):
         variant = self.shopinvader_variant

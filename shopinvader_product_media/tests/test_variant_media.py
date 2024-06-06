@@ -12,7 +12,11 @@ class ProductMediaCase(SavepointCase, Mixin):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        lang = cls.env.ref("base.lang_en")
         cls.template = cls.env.ref("product.product_product_4_product_template")
+        cls.s_template = cls.env["shopinvader.product"].create(
+            {"record_id": cls.template.id, "lang_id": lang.id}
+        )
         cls.product_a = cls.env.ref("product.product_product_4")
         cls.product_b = cls.env.ref("product.product_product_4b")
         cls.product_c = cls.env.ref("product.product_product_4c")
@@ -20,23 +24,24 @@ class ProductMediaCase(SavepointCase, Mixin):
         cls.media2 = cls._create_storage_media("test-media.txt")
         cls.media3 = cls._create_storage_media("test-media.csv")
         cls.s_variant = cls.env["shopinvader.variant"].create(
-            {"record_id": cls.product_a.id}
+                {"record_id": cls.product_a.id, "shopinvader_product_id": cls.s_template.id, "lang_id": lang.id}
         )
 
-    # FIXME
     def test_availability(self):
         self.assertEqual(len(self.s_variant.variant_media_ids), 0)
         rel1 = self.env["product.media.relation"].create(
             {"product_tmpl_id": self.template.id, "media_id": self.media1.id}
         )
-        self.assertEqual(len(self.s_variant.variant_media_ids), 1)
-        self.env["product.media.relation"].create(
+        self.assertEqual(self.s_variant.variant_media_ids, rel1)
+        rel2 = self.env["product.media.relation"].create(
             {"product_tmpl_id": self.template.id, "media_id": self.media2.id}
         )
-        self.assertEqual(len(self.s_variant.variant_media_ids), 2)
-        self.env["product.media.relation"].create(
+        self.assertEqual(self.s_variant.variant_media_ids, rel1 | rel2)
+        rel3 = self.env["product.media.relation"].create(
             {"product_tmpl_id": self.template.id, "media_id": self.media3.id}
         )
-        self.assertEqual(len(self.s_variant.variant_media_ids), 3)
+        self.assertEqual(self.s_variant.variant_media_ids, rel1 | rel2 | rel3)
+        # Setting a media as inactive should exclude related relations
+        # on products
         rel1.media_id.active = False
-        self.assertEqual(len(self.s_variant.variant_media_ids), 2)
+        self.assertEqual(self.s_variant.variant_media_ids, rel2 | rel3)

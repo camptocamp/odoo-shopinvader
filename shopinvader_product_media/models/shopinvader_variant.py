@@ -18,6 +18,7 @@ class ShopinvaderVariant(models.Model):
     )
     def _compute_variant_media_ids(self):
         for variant in self:
-            variant.variant_media_ids = (
-                variant.record_id.variant_media_ids.media_id.filtered("active")
+            medias = variant.record_id.variant_media_ids.filtered(
+                lambda m: m.media_id.filtered("active")
             )
+            variant.variant_media_ids = [(6, 0, medias.ids)]

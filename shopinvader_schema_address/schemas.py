@@ -16,6 +16,7 @@ class Address(StrictExtendableBaseModel):
     email: str | None = None
     state_id: int | None = None
     country_id: int | None = None
+    company_type: str | None = None
 
     @classmethod
     def from_res_partner(cls, odoo_rec):
@@ -31,6 +32,7 @@ class Address(StrictExtendableBaseModel):
             email=odoo_rec.email or None,
             state_id=odoo_rec.state_id.id or None,
             country_id=odoo_rec.country_id.id or None,
+            company_type=odoo_rec.company_type or None,
         )
 
 

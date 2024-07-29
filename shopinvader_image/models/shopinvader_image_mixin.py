@@ -144,7 +144,8 @@ class ShopinvaderImageMixin(models.AbstractModel):
 
     def _get_image_alt(self, image):
         alt_name = image.alt_name
-        if alt_name:
+        # Makes no sense to store the filename as alt as we already have the URL
+        if alt_name and alt_name != image.name:
             return alt_name
         if self.backend_id.image_data_empty_alt_name_allowed:
             return ""

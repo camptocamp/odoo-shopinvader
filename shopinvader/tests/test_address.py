@@ -34,6 +34,7 @@ class CommonAddressCase(CommonCase):
             "street": "Rue du jardin",
             "zip": "43110",
             "city": "Aurec sur Loire",
+            "mobile": "555555555",
             "phone": "0485485454",
             "country": {"id": cls.env.ref("base.fr").id},
         }

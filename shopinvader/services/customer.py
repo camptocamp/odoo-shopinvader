@@ -113,6 +113,7 @@ class CustomerService(Component):
             "street2",
             "zip",
             "city",
+            "mobile",
             "phone",
             "country",
         ]

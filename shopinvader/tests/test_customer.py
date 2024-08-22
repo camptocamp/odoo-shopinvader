@@ -30,6 +30,7 @@ class TestCustomerCommon(CommonCase):
             "street": "Rue du jardin",
             "zip": "43110",
             "city": "Aurec sur Loire",
+            "mobile": "555555555",
             "phone": "0485485454",
             "country": {"id": self.env.ref("base.fr").id},
             "is_company": False,

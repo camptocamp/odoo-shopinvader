@@ -23,6 +23,9 @@ from odoo.addons.shopinvader_schema_sale.schemas import Sale
 
 from ..schemas import CartSyncInput, CartTransaction, CartUpdateInput
 
+import logging
+_logger = logging.getLogger(__name__)
+
 cart_router = APIRouter(tags=["carts"])
 
 
@@ -55,6 +58,7 @@ def sync(
     cart = env["shopinvader_api_cart.cart_router.helper"]._sync_cart(
         partner, cart, str(uuid) if uuid else None, data.transactions
     )
+    _logger.info("Sync cart: %s", data)
     return Sale.from_sale_order(cart) if cart else Response(status_code=204)
 
 
@@ -87,7 +91,7 @@ def update(
     cart = env["shopinvader_api_cart.cart_router.helper"]._update(
         partner, data, str(uuid) if uuid else None
     )
-
+    _logger.info("Uodate cart: %s", data)
     return Sale.from_sale_order(cart)
 
 

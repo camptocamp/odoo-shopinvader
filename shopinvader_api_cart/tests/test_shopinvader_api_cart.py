@@ -1,4 +1,6 @@
 # Copyright 2022 ACSONE SA/NV
+# Copyright 2024 Camptocamp (http://www.camptocamp.com).
+# @author Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import json
@@ -7,6 +9,7 @@ from fastapi import status
 from requests import Response
 
 from odoo.exceptions import AccessError, MissingError
+from odoo.tests.common import RecordCapturer
 
 from ..routers.cart import cart_router
 from ..schemas import CartTransaction
@@ -517,3 +520,27 @@ class TestSaleCart(CommonSaleCart):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         info = response.json()
         self.assertTrue(self.env["sale.order"].browse(info["id"]).exists())
+
+    def test_sync_new_cart(self) -> None:
+        # A cart is already existing
+        so = self.env["sale.order"]._create_empty_cart(
+            self.default_fastapi_authenticated_partner.id
+        )
+        data = {
+            "transactions": [
+                {"uuid": self.trans_uuid_1, "product_id": self.product_1.id, "qty": 1}
+            ]
+        }
+        with RecordCapturer(
+            self.env["sale.order"],
+            [("partner_id", "=", self.default_fastapi_authenticated_partner.id)],
+        ) as capt:
+            for __ in range(1, 5):
+                # Get 4 new carts
+                with self._create_test_client(router=cart_router) as test_client:
+                    response: Response = test_client.post(
+                        "/new", content=json.dumps(data)
+                    )
+                    self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+                    self.assertTrue(capt.records[-1].id > so.id)
+            self.assertEqual(len(capt.records), 4)

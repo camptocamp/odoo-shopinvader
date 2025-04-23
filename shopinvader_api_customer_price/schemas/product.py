@@ -13,4 +13,4 @@ class ProductPrice(StrictExtendableBaseModel):
 
     @classmethod
     def from_products(cls, records, pricelist=None):
-        return {rec.id: rec._get_price(pricelist=pricelist) for rec in records}
+        return records._get_price(pricelist=pricelist)

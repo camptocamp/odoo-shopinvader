@@ -14,8 +14,9 @@ class ProductProduct(models.Model):
     def _compute_shopinvader_price(self):
         index_id = self.env.context.get("index_id", False)
         index = self.env["se.index"].browse(index_id)
+        pricelist = None
+        if index_id:
+            pricelist = index._get_pricelist()
+        price_unit_list = self._get_price(pricelist=pricelist)
         for record in self:
-            pricelist = None
-            if index_id:
-                pricelist = index._get_pricelist()
-            record.shopinvader_price = record._get_price(pricelist=pricelist)
+            record.shopinvader_price = price_unit_list[record.id]

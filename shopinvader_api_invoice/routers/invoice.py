@@ -7,10 +7,12 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, StreamingResponse
 
+from odoo import fields, models
 from odoo.api import Environment
 from odoo.http import content_disposition
 from odoo.tools.safe_eval import safe_eval
 
+from odoo.addons.account.models.account_move import AccountMove
 from odoo.addons.base.models.res_partner import Partner as ResPartner
 from odoo.addons.extendable_fastapi.schemas import PagedCollection
 from odoo.addons.fastapi.dependencies import (
@@ -20,6 +22,7 @@ from odoo.addons.fastapi.dependencies import (
     paging,
 )
 from odoo.addons.fastapi.schemas import Paging
+from odoo.addons.shopinvader_filtered_model.utils import FilteredModelAdapter
 from odoo.addons.shopinvader_schema_invoice.schemas import Invoice
 
 invoice_router = APIRouter(tags=["invoices"])
@@ -32,22 +35,10 @@ async def search(
     partner: Annotated[ResPartner, Depends(authenticated_partner)],
 ) -> PagedCollection[Invoice]:  # noqa: B008
     """Get the list of current partner's invoices"""
-    domain = [
-        ("partner_id", "=", partner.id),
-        ("move_type", "in", ("out_invoice", "out_refund")),
-        ("state", "not in", ("cancel", "draft")),
-    ]
-    # Adding record rules for any possible models
-    # that relates directly on indirectly to an invoice
-    # seems over killing.
-    # Moreover, having a rule for records not tied to partners
-    # can be quite complicated.
-    # Let's use sudo!
-    count = env["account.move"].sudo().search_count(domain)
-    invoices = (
-        env["account.move"]
-        .sudo()
-        .search(domain, limit=paging.limit, offset=paging.offset)
+    count, invoices = (
+        env["shopinvader_api_invoice.invoice_router.helper"]
+        .new({"partner": partner})
+        ._search(paging)
     )
     return PagedCollection[Invoice](
         count=count,
@@ -86,3 +77,34 @@ def get_pdf(env, record_id) -> tuple[str, bytes]:
         env["ir.actions.report"].sudo()._render_qweb_pdf(report_name, [record.id])[0]
     )
     return filename, content
+
+
+class ShopinvaderApiInvoiceRouterHelper(models.AbstractModel):
+    _name = "shopinvader_api_invoice.invoice_router.helper"
+    _description = "Shopinvader Api Invoice Service Helper"
+
+    partner = fields.Many2one("res.partner")
+
+    def _get_domain_adapter(self):
+        return [
+            ("partner_id", "=", self.partner.id),
+            ("move_type", "in", ("out_invoice", "out_refund")),
+            ("state", "not in", ("cancel", "draft")),
+        ]
+
+    @property
+    def model_adapter(self) -> FilteredModelAdapter[AccountMove]:
+        # Adding record rules for any possible models
+        # that relates directly on indirectly to an invoice
+        # seems over killing.
+        # Moreover, having a rule for records not tied to partners
+        # can be quite complicated.
+        # Let's use sudo!
+        return FilteredModelAdapter[AccountMove](self.sudo().env, [])
+
+    def _search(self, paging) -> tuple[int, AccountMove]:
+        return self.model_adapter.search_with_count(
+            domain=self._get_domain_adapter(),
+            limit=paging.limit,
+            offset=paging.offset,
+        )

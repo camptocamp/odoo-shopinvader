@@ -42,7 +42,7 @@ def search(
     )
     return PagedCollection[Sale](
         count=count,
-        items=[Sale.from_sale_order(order) for order in orders],
+        items=[Sale.from_sale_order(order) for order in orders.sudo()],
     )
 
 
@@ -59,6 +59,7 @@ def get(
         env["shopinvader_api_sale.sales_router.helper"]
         .new({"partner": partner})
         ._get(sale_id)
+        .sudo()
     )
 
 
